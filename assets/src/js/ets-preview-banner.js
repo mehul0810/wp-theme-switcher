@@ -1,7 +1,7 @@
 /**
  * Preview Banner Functionality
  * 
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  */
 
 (function($) {

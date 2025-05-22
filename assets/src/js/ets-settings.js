@@ -1,7 +1,7 @@
 /**
  * Settings Page React Component
  * 
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  */
 
 (function(wp) {
