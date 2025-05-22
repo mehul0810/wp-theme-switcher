@@ -6,19 +6,21 @@
  * @since 1.0.0
  */
 
+namespace EasyThemeSwitcher;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * ETS_Settings Class.
+ * Settings Class.
  *
  * Handles the plugin settings.
  *
  * @since 1.0.0
  */
-class ETS_Settings {
+class Settings {
 
 	/**
 	 * Constructor.
@@ -160,7 +162,7 @@ class ETS_Settings {
 		$settings = $this->get_settings();
 
 		// Get themes.
-		$themes_instance = new ETS_Theme_Switcher();
+		$themes_instance = new ThemeSwitcher();
 		$themes = $themes_instance->get_available_themes();
 
 		// Send response.
@@ -170,6 +172,3 @@ class ETS_Settings {
 		) );
 	}
 }
-
-// Initialize Settings.
-new ETS_Settings();

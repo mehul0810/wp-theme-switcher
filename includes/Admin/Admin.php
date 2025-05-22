@@ -6,19 +6,23 @@
  * @since 1.0.0
  */
 
+namespace EasyThemeSwitcher\Admin;
+
+use EasyThemeSwitcher\ThemeSwitcher;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * ETS_Admin Class.
+ * Admin Class.
  *
  * Handles admin-related functionality.
  *
  * @since 1.0.0
  */
-class ETS_Admin {
+class Admin {
 
 	/**
 	 * Constructor.
@@ -68,12 +72,12 @@ class ETS_Admin {
 	 * Add admin bar menu.
 	 *
 	 * @since 1.0.0
-	 * @param WP_Admin_Bar $wp_admin_bar Admin bar object.
+	 * @param \WP_Admin_Bar $wp_admin_bar Admin bar object.
 	 * @return void
 	 */
 	public function add_admin_bar_menu( $wp_admin_bar ) {
 		// Only show for users who can preview.
-		$theme_switcher = new ETS_Theme_Switcher();
+		$theme_switcher = new ThemeSwitcher();
 		if ( ! $theme_switcher->can_user_preview() ) {
 			return;
 		}
@@ -137,6 +141,3 @@ class ETS_Admin {
 		}
 	}
 }
-
-// Initialize Admin.
-new ETS_Admin();

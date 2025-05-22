@@ -6,19 +6,21 @@
  * @since 1.0.0
  */
 
+namespace EasyThemeSwitcher\Admin;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * ETS_Settings_Page Class.
+ * SettingsPage Class.
  *
  * Handles the settings page in admin.
  *
  * @since 1.0.0
  */
-class ETS_Settings_Page {
+class SettingsPage {
 
 	/**
 	 * Constructor.
@@ -139,6 +141,3 @@ class ETS_Settings_Page {
 		);
 	}
 }
-
-// Initialize Settings Page.
-new ETS_Settings_Page();

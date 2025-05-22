@@ -6,19 +6,21 @@
  * @since 1.0.0
  */
 
+namespace EasyThemeSwitcher;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * ETS_Theme_Switcher Class.
+ * ThemeSwitcher Class.
  *
  * Handles the core functionality of theme switching.
  *
  * @since 1.0.0
  */
-class ETS_Theme_Switcher {
+class ThemeSwitcher {
 
 	/**
 	 * Constructor.
@@ -306,6 +308,3 @@ class ETS_Theme_Switcher {
 		return $theme_options;
 	}
 }
-
-// Initialize Theme Switcher.
-new ETS_Theme_Switcher();

@@ -6,19 +6,23 @@
  * @since 1.0.0
  */
 
+namespace EasyThemeSwitcher\Frontend;
+
+use EasyThemeSwitcher\ThemeSwitcher;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * ETS_Preview_Banner Class.
+ * PreviewBanner Class.
  *
  * Handles the preview banner functionality.
  *
  * @since 1.0.0
  */
-class ETS_Preview_Banner {
+class PreviewBanner {
 
 	/**
 	 * Constructor.
@@ -52,7 +56,7 @@ class ETS_Preview_Banner {
 	 */
 	public function enqueue_scripts() {
 		// Get theme switcher instance.
-		$theme_switcher = new ETS_Theme_Switcher();
+		$theme_switcher = new ThemeSwitcher();
 		
 		// Only enqueue for users who can preview and are in preview mode.
 		if ( ! $theme_switcher->can_user_preview() || ! $theme_switcher->get_preview_theme() ) {
@@ -112,7 +116,7 @@ class ETS_Preview_Banner {
 		}
 
 		// Check permissions.
-		$theme_switcher = new ETS_Theme_Switcher();
+		$theme_switcher = new ThemeSwitcher();
 		if ( ! $theme_switcher->can_user_preview() ) {
 			wp_send_json_error( array( 'message' => __( 'You do not have permission to preview themes.', 'easy-theme-switcher' ) ) );
 		}
@@ -138,6 +142,3 @@ class ETS_Preview_Banner {
 		) );
 	}
 }
-
-// Initialize Preview Banner.
-new ETS_Preview_Banner();

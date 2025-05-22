@@ -6,19 +6,23 @@
  * @since 1.0.0
  */
 
+namespace EasyThemeSwitcher\Frontend;
+
+use EasyThemeSwitcher\ThemeSwitcher;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * ETS_Frontend Class.
+ * Frontend Class.
  *
  * Handles frontend-related functionality.
  *
  * @since 1.0.0
  */
-class ETS_Frontend {
+class Frontend {
 
 	/**
 	 * Constructor.
@@ -38,7 +42,7 @@ class ETS_Frontend {
 	 */
 	private function init_hooks() {
 		// Check if we're in preview mode and banner is enabled.
-		$theme_switcher = new ETS_Theme_Switcher();
+		$theme_switcher = new ThemeSwitcher();
 		$settings = get_option( 'ets_settings', array() );
 		$preview_theme = $theme_switcher->get_preview_theme();
 		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
@@ -60,7 +64,7 @@ class ETS_Frontend {
 	 */
 	public function add_preview_banner() {
 		// Get current preview theme.
-		$theme_switcher = new ETS_Theme_Switcher();
+		$theme_switcher = new ThemeSwitcher();
 		$preview_theme_slug = $theme_switcher->get_preview_theme();
 		
 		if ( ! $preview_theme_slug ) {
@@ -115,7 +119,7 @@ class ETS_Frontend {
 	 */
 	public function add_compatibility_notice() {
 		// Get current preview theme.
-		$theme_switcher = new ETS_Theme_Switcher();
+		$theme_switcher = new ThemeSwitcher();
 		$preview_theme_slug = $theme_switcher->get_preview_theme();
 		
 		if ( ! $preview_theme_slug ) {
@@ -172,6 +176,3 @@ class ETS_Frontend {
 		return is_readable( $theme->get_file_path( 'templates/index.html' ) );
 	}
 }
-
-// Initialize Frontend.
-new ETS_Frontend();

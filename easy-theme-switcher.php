@@ -55,141 +55,44 @@ if ( ! defined( 'ETS_DEFAULT_QUERY_PARAM' ) ) {
 }
 
 /**
- * Main Easy_Theme_Switcher Class.
- *
- * @since 1.0.0
+ * Load Composer autoloader if available.
  */
-final class Easy_Theme_Switcher {
-
+if ( file_exists( ETS_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
+	require_once ETS_PLUGIN_DIR . 'vendor/autoload.php';
+} else {
 	/**
-	 * Singleton instance of the class.
-	 *
-	 * @since 1.0.0
-	 * @var Easy_Theme_Switcher
+	 * Manual autoloader as fallback.
 	 */
-	private static $instance;
-
-	/**
-	 * Main Easy_Theme_Switcher Instance.
-	 *
-	 * Ensures only one instance of Easy_Theme_Switcher is loaded or can be loaded.
-	 *
-	 * @since 1.0.0
-	 * @return Easy_Theme_Switcher - Main instance.
-	 */
-	public static function instance() {
-		if ( ! isset( self::$instance ) && ! ( self::$instance instanceof Easy_Theme_Switcher ) ) {
-			self::$instance = new Easy_Theme_Switcher();
-			self::$instance->setup();
-			self::$instance->includes();
-			self::$instance->hooks();
+	spl_autoload_register( function( $class ) {
+		// If the class does not start with our prefix, bail out.
+		if ( strpos( $class, 'EasyThemeSwitcher\\' ) !== 0 ) {
+			return;
 		}
 
-		return self::$instance;
-	}
+		// Remove prefix from the class name.
+		$relative_class = substr( $class, strlen( 'EasyThemeSwitcher\\' ) );
 
-	/**
-	 * Setup plugin constants.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function setup() {
-		// Register activation hook.
-		register_activation_hook( ETS_PLUGIN_FILE, array( $this, 'activate' ) );
+		// Convert namespace to file path.
+		$file = ETS_PLUGIN_DIR . 'includes/' . str_replace( '\\', '/', $relative_class ) . '.php';
 
-		// Register deactivation hook.
-		register_deactivation_hook( ETS_PLUGIN_FILE, array( $this, 'deactivate' ) );
-	}
-
-	/**
-	 * Include required files.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function includes() {
-		// Include core files.
-		require_once ETS_PLUGIN_DIR . 'includes/class-ets-theme-switcher.php';
-		require_once ETS_PLUGIN_DIR . 'includes/class-ets-settings.php';
-		
-		// Include admin files.
-		if ( is_admin() ) {
-			require_once ETS_PLUGIN_DIR . 'includes/admin/class-ets-admin.php';
-			require_once ETS_PLUGIN_DIR . 'includes/admin/class-ets-settings-page.php';
+		// If the file exists, require it.
+		if ( file_exists( $file ) ) {
+			require_once $file;
 		}
-
-		// Include frontend files.
-		require_once ETS_PLUGIN_DIR . 'includes/frontend/class-ets-frontend.php';
-		require_once ETS_PLUGIN_DIR . 'includes/frontend/class-ets-preview-banner.php';
-	}
-
-	/**
-	 * Setup hooks.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function hooks() {
-		// Load text domain.
-		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
-	}
-
-	/**
-	 * Activation hook.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function activate() {
-		// Set default options.
-		$default_options = array(
-			'enable_preview_banner' => 'yes',
-			'default_preview_theme' => '',
-			'preview_query_param'   => ETS_DEFAULT_QUERY_PARAM,
-		);
-
-		// Add options if they don't exist.
-		add_option( 'ets_settings', $default_options );
-
-		// Flush rewrite rules.
-		flush_rewrite_rules();
-	}
-
-	/**
-	 * Deactivation hook.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function deactivate() {
-		// Flush rewrite rules.
-		flush_rewrite_rules();
-	}
-
-	/**
-	 * Load plugin text domain.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function load_textdomain() {
-		load_plugin_textdomain(
-			'easy-theme-switcher',
-			false,
-			dirname( plugin_basename( ETS_PLUGIN_FILE ) ) . '/languages/'
-		);
-	}
+	} );
 }
+
+// Backward compatibility for non-namespaced code.
+class_alias( 'EasyThemeSwitcher\\Plugin', 'Easy_Theme_Switcher' );
 
 /**
  * Returns the main instance of Easy_Theme_Switcher.
  *
  * @since 1.0.0
- * @return Easy_Theme_Switcher
+ * @return \EasyThemeSwitcher\Plugin
  */
 function ETS() {
-	return Easy_Theme_Switcher::instance();
+	return \EasyThemeSwitcher\Plugin::instance();
 }
 
 // Initialize the plugin.
