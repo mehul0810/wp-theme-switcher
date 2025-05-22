@@ -1,0 +1,47 @@
+/**
+ * Theme Preview CSS
+ *
+ * @package EasyThemeSwitcher
+ */
+
+/* Theme preview badge for admin bar */
+#wpadminbar #wp-admin-bar-ets-preview.ets-preview-node > .ab-item {
+    background-color: #d54e21;
+    color: #fff;
+    font-weight: bold;
+}
+
+#wpadminbar #wp-admin-bar-ets-exit-preview.ets-exit-preview-link > .ab-item {
+    color: #fff;
+    font-weight: bold;
+}
+
+#wpadminbar #wp-admin-bar-ets-preview .ab-sub-wrapper .ab-item {
+    color: #b4b9be;
+}
+
+#wpadminbar #wp-admin-bar-ets-preview .ets-current-theme > .ab-item {
+    font-weight: bold;
+    color: #00b9eb;
+}
+
+/* Add a subtle indicator to the editing screen when previewing */
+body.ets-preview-mode {
+    position: relative;
+}
+
+body.ets-preview-mode::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #d54e21;
+    z-index: 999999;
+}
+
+/* Hide the indicator in the admin area, except in preview frame */
+body.wp-admin:not(iframe#content-iframe) body.ets-preview-mode::after {
+    display: none;
+}

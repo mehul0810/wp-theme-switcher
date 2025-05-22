@@ -1,0 +1,143 @@
+<?php
+/**
+ * Preview Banner Class
+ *
+ * @package EasyThemeSwitcher
+ * @since 1.0.0
+ */
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * ETS_Preview_Banner Class.
+ *
+ * Handles the preview banner functionality.
+ *
+ * @since 1.0.0
+ */
+class ETS_Preview_Banner {
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __construct() {
+		// Initialize hooks.
+		$this->init_hooks();
+	}
+
+	/**
+	 * Initialize hooks.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	private function init_hooks() {
+		// Enqueue preview banner scripts and styles.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		
+		// AJAX handler for switching themes.
+		add_action( 'wp_ajax_ets_switch_theme', array( $this, 'ajax_switch_theme' ) );
+	}
+
+	/**
+	 * Enqueue scripts and styles for the preview banner.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function enqueue_scripts() {
+		// Get theme switcher instance.
+		$theme_switcher = new ETS_Theme_Switcher();
+		
+		// Only enqueue for users who can preview and are in preview mode.
+		if ( ! $theme_switcher->can_user_preview() || ! $theme_switcher->get_preview_theme() ) {
+			return;
+		}
+
+		// Get settings.
+		$settings = get_option( 'ets_settings', array() );
+		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
+		
+		// Only enqueue if banner is enabled.
+		if ( ! $enable_banner ) {
+			return;
+		}
+
+		// Enqueue banner CSS.
+		wp_enqueue_style(
+			'ets-preview-banner',
+			ETS_PLUGIN_URL . 'assets/css/ets-preview-banner.css',
+			array(),
+			ETS_PLUGIN_VERSION
+		);
+
+		// Enqueue banner JS.
+		wp_enqueue_script(
+			'ets-preview-banner',
+			ETS_PLUGIN_URL . 'assets/js/ets-preview-banner.js',
+			array( 'jquery' ),
+			ETS_PLUGIN_VERSION,
+			true
+		);
+
+		// Localize script.
+		wp_localize_script(
+			'ets-preview-banner',
+			'etsPreviewBanner',
+			array(
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'nonce'         => wp_create_nonce( 'ets-preview-banner-nonce' ),
+				'currentUrl'    => esc_url( remove_query_arg( $theme_switcher->get_query_param_name() ) ),
+				'queryParam'    => $theme_switcher->get_query_param_name(),
+				'currentTheme'  => $theme_switcher->get_preview_theme(),
+			)
+		);
+	}
+
+	/**
+	 * AJAX handler for switching themes.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function ajax_switch_theme() {
+		// Check nonce.
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ets-preview-banner-nonce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'easy-theme-switcher' ) ) );
+		}
+
+		// Check permissions.
+		$theme_switcher = new ETS_Theme_Switcher();
+		if ( ! $theme_switcher->can_user_preview() ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to preview themes.', 'easy-theme-switcher' ) ) );
+		}
+
+		// Get theme from request.
+		$theme = isset( $_POST['theme'] ) ? sanitize_text_field( wp_unslash( $_POST['theme'] ) ) : '';
+		
+		// Check if theme exists.
+		if ( empty( $theme ) || ! wp_get_theme( $theme )->exists() ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid theme selection.', 'easy-theme-switcher' ) ) );
+		}
+
+		// Get current URL.
+		$current_url = isset( $_POST['currentUrl'] ) ? esc_url_raw( wp_unslash( $_POST['currentUrl'] ) ) : '';
+		
+		// Build new URL with theme parameter.
+		$new_url = add_query_arg( $theme_switcher->get_query_param_name(), $theme, $current_url );
+		
+		// Send success response.
+		wp_send_json_success( array(
+			'message' => __( 'Theme switched successfully.', 'easy-theme-switcher' ),
+			'url'     => $new_url,
+		) );
+	}
+}
+
+// Initialize Preview Banner.
+new ETS_Preview_Banner();
