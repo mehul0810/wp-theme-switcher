@@ -1,0 +1,28 @@
+{
+  "name": "easy-theme-switcher",
+  "version": "1.0.0",
+  "description": "Preview, test, and assign any installed WordPress theme to individual pages, posts, or taxonomy archives—privately and instantly.",
+  "main": "index.js",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "format:js": "wp-scripts format-js",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "packages-update": "wp-scripts packages-update"
+  },
+  "author": "Mehul Gohil",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@wordpress/scripts": "^26.19.0",
+    "postcss": "^8.4.31",
+    "postcss-preset-env": "^9.3.0"
+  },
+  "dependencies": {
+    "@wordpress/components": "^25.13.0",
+    "@wordpress/compose": "^6.23.0",
+    "@wordpress/data": "^9.17.0",
+    "@wordpress/element": "^5.23.0",
+    "@wordpress/i18n": "^4.47.0"
+  }
+}

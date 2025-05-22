@@ -73,7 +73,7 @@ if ( file_exists( ETS_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 		$relative_class = substr( $class, strlen( 'EasyThemeSwitcher\\' ) );
 
 		// Convert namespace to file path.
-		$file = ETS_PLUGIN_DIR . 'includes/' . str_replace( '\\', '/', $relative_class ) . '.php';
+		$file = ETS_PLUGIN_DIR . 'src/' . str_replace( '\\', '/', $relative_class ) . '.php';
 
 		// If the file exists, require it.
 		if ( file_exists( $file ) ) {
