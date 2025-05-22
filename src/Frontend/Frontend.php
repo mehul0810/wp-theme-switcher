@@ -2,13 +2,13 @@
 /**
  * Frontend Class
  *
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  * @since 1.0.0
  */
 
-namespace EasyThemeSwitcher\Frontend;
+namespace SmartThemeSwitcher\Frontend;
 
-use EasyThemeSwitcher\ThemeSwitcher;
+use SmartThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -85,15 +85,15 @@ class Frontend {
 		<div id="ets-preview-banner" class="ets-preview-banner">
 			<div class="ets-preview-banner-inner">
 				<div class="ets-preview-info">
-					<span class="ets-preview-label"><?php esc_html_e( 'Preview Mode:', 'easy-theme-switcher' ); ?></span>
+					<span class="ets-preview-label"><?php esc_html_e( 'Preview Mode:', 'smart-theme-switcher' ); ?></span>
 					<span class="ets-preview-theme"><?php echo esc_html( $preview_theme->get( 'Name' ) ); ?></span>
 				</div>
 				
 				<div class="ets-preview-actions">
 					<div class="ets-theme-select-wrapper">
-						<label for="ets-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'easy-theme-switcher' ); ?></label>
+						<label for="ets-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'smart-theme-switcher' ); ?></label>
 						<select id="ets-theme-select" class="ets-theme-select">
-							<option value=""><?php esc_html_e( 'Switch Theme...', 'easy-theme-switcher' ); ?></option>
+							<option value=""><?php esc_html_e( 'Switch Theme...', 'smart-theme-switcher' ); ?></option>
 							<?php foreach ( $themes as $slug => $name ) : ?>
 								<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $slug, $preview_theme_slug ); ?>>
 									<?php echo esc_html( $name ); ?>
@@ -103,7 +103,7 @@ class Frontend {
 					</div>
 					
 					<a href="<?php echo esc_url( $current_url ); ?>" class="ets-exit-preview-button button button-secondary">
-						<?php esc_html_e( 'Exit Preview', 'easy-theme-switcher' ); ?>
+						<?php esc_html_e( 'Exit Preview', 'smart-theme-switcher' ); ?>
 					</a>
 				</div>
 			</div>
@@ -137,8 +137,8 @@ class Frontend {
 		// Only show notice if there's a mismatch.
 		if ( $preview_is_block !== $active_is_block ) {
 			$message = $preview_is_block
-				? __( 'You are previewing a block theme while your active theme is classic. Some layouts may appear differently.', 'easy-theme-switcher' )
-				: __( 'You are previewing a classic theme while your active theme is block-based. Some layouts may appear differently.', 'easy-theme-switcher' );
+				? __( 'You are previewing a block theme while your active theme is classic. Some layouts may appear differently.', 'smart-theme-switcher' )
+				: __( 'You are previewing a classic theme while your active theme is block-based. Some layouts may appear differently.', 'smart-theme-switcher' );
 			
 			// Output notice.
 			?>
