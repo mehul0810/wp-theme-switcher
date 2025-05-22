@@ -2,13 +2,13 @@
 /**
  * Admin Class
  *
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  * @since 1.0.0
  */
 
-namespace EasyThemeSwitcher\Admin;
+namespace SmartThemeSwitcher\Admin;
 
-use EasyThemeSwitcher\ThemeSwitcher;
+use SmartThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
