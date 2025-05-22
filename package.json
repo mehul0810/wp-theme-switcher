@@ -1,5 +1,5 @@
 {
-  "name": "easy-theme-switcher",
+  "name": "smart-theme-switcher",
   "version": "1.0.0",
   "description": "Preview, test, and assign any installed WordPress theme to individual pages, posts, or taxonomy archives—privately and instantly.",
   "main": "index.js",
