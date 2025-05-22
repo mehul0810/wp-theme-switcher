@@ -1,0 +1,57 @@
+name: Create Plugin Release ZIP
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build and Create Plugin ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer:v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Install PHP Dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Install Node.js Dependencies
+        run: npm ci
+
+      - name: Build Assets
+        run: npm run build
+
+      - name: Create ZIP file
+        run: |
+          # Create a clean production directory
+          mkdir -p easy-theme-switcher-production
+          
+          # Copy necessary production files
+          cp -r assets/dist easy-theme-switcher-production/assets/
+          cp -r src easy-theme-switcher-production/src/
+          cp -r vendor easy-theme-switcher-production/vendor/
+          cp easy-theme-switcher.php easy-theme-switcher-production/
+          cp README.md easy-theme-switcher-production/
+          cp LICENSE easy-theme-switcher-production/
+          
+          # Create ZIP file
+          cd easy-theme-switcher-production
+          zip -r ../easy-theme-switcher-${{ github.event.release.tag_name }}.zip .
+          cd ..
+
+      - name: Upload Release ZIP
+        uses: softprops/action-gh-release@v1
+        with:
+          files: easy-theme-switcher-${{ github.event.release.tag_name }}.zip

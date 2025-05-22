@@ -1,0 +1,22 @@
+{
+    "name": "mehul0810/easy-theme-switcher",
+    "description": "Preview, test, and assign any installed WordPress theme to individual pages, posts, or taxonomy archives—privately and instantly.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Mehul Gohil",
+            "email": "mehul.gohil0810@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "EasyThemeSwitcher\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
