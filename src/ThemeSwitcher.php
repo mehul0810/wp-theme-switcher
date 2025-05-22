@@ -196,7 +196,7 @@ class ThemeSwitcher {
 		// Enqueue preview CSS.
 		wp_enqueue_style(
 			'ets-preview',
-			ETS_PLUGIN_URL . 'assets/css/ets-preview.css',
+			ETS_PLUGIN_URL . 'assets/dist/css/ets-preview.css',
 			array(),
 			ETS_PLUGIN_VERSION
 		);
@@ -204,7 +204,7 @@ class ThemeSwitcher {
 		// Enqueue preview JS.
 		wp_enqueue_script(
 			'ets-preview',
-			ETS_PLUGIN_URL . 'assets/js/ets-preview.js',
+			ETS_PLUGIN_URL . 'assets/dist/js/ets-preview.js',
 			array( 'jquery' ),
 			ETS_PLUGIN_VERSION,
 			true
@@ -239,7 +239,7 @@ class ThemeSwitcher {
 		// Enqueue editor script.
 		wp_enqueue_script(
 			'ets-editor',
-			ETS_PLUGIN_URL . 'assets/js/ets-editor.js',
+			ETS_PLUGIN_URL . 'assets/dist/js/ets-editor.js',
 			array(
 				'wp-blocks',
 				'wp-element',
