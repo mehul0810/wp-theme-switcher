@@ -2,11 +2,11 @@
 /**
  * Theme Switcher Class
  *
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  * @since 1.0.0
  */
 
-namespace EasyThemeSwitcher;
+namespace SmartThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -64,10 +64,10 @@ class ThemeSwitcher {
 	 */
 	public function get_preview_theme() {
 		// Get settings.
-		$settings = get_option( 'ets_settings', array() );
+		$settings = get_option( 'sts_settings', array() );
 		
 		// Get query parameter name.
-		$query_param = isset( $settings['preview_query_param'] ) ? $settings['preview_query_param'] : ETS_DEFAULT_QUERY_PARAM;
+		$query_param = isset( $settings['preview_query_param'] ) ? $settings['preview_query_param'] : STS_DEFAULT_QUERY_PARAM;
 		
 		// Check if preview parameter exists.
 		if ( isset( $_GET[ $query_param ] ) && ! empty( $_GET[ $query_param ] ) ) {
@@ -196,17 +196,17 @@ class ThemeSwitcher {
 		// Enqueue preview CSS.
 		wp_enqueue_style(
 			'ets-preview',
-			ETS_PLUGIN_URL . 'assets/dist/css/ets-preview.css',
+			STS_PLUGIN_URL . 'assets/dist/css/ets-preview.css',
 			array(),
-			ETS_PLUGIN_VERSION
+			STS_PLUGIN_VERSION
 		);
 
 		// Enqueue preview JS.
 		wp_enqueue_script(
 			'ets-preview',
-			ETS_PLUGIN_URL . 'assets/dist/js/ets-preview.js',
+			STS_PLUGIN_URL . 'assets/dist/js/ets-preview.js',
 			array( 'jquery' ),
-			ETS_PLUGIN_VERSION,
+			STS_PLUGIN_VERSION,
 			true
 		);
 
@@ -239,7 +239,7 @@ class ThemeSwitcher {
 		// Enqueue editor script.
 		wp_enqueue_script(
 			'ets-editor',
-			ETS_PLUGIN_URL . 'assets/dist/js/ets-editor.js',
+			STS_PLUGIN_URL . 'assets/dist/js/ets-editor.js',
 			array(
 				'wp-blocks',
 				'wp-element',
@@ -250,7 +250,7 @@ class ThemeSwitcher {
 				'wp-edit-post',
 				'wp-data',
 			),
-			ETS_PLUGIN_VERSION,
+			STS_PLUGIN_VERSION,
 			true
 		);
 
@@ -287,8 +287,8 @@ class ThemeSwitcher {
 	 * @return string
 	 */
 	public function get_query_param_name() {
-		$settings = get_option( 'ets_settings', array() );
-		return isset( $settings['preview_query_param'] ) ? $settings['preview_query_param'] : ETS_DEFAULT_QUERY_PARAM;
+		$settings = get_option( 'sts_settings', array() );
+		return isset( $settings['preview_query_param'] ) ? $settings['preview_query_param'] : STS_DEFAULT_QUERY_PARAM;
 	}
 
 	/**

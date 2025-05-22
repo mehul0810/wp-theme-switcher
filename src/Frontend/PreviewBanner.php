@@ -2,13 +2,13 @@
 /**
  * Preview Banner Class
  *
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  * @since 1.0.0
  */
 
-namespace EasyThemeSwitcher\Frontend;
+namespace SmartThemeSwitcher\Frontend;
 
-use EasyThemeSwitcher\ThemeSwitcher;
+use SmartThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -75,17 +75,17 @@ class PreviewBanner {
 		// Enqueue banner CSS.
 		wp_enqueue_style(
 			'ets-preview-banner',
-			ETS_PLUGIN_URL . 'assets/dist/css/ets-preview-banner.css',
+			STS_PLUGIN_URL . 'assets/dist/css/ets-preview-banner.css',
 			array(),
-			ETS_PLUGIN_VERSION
+			STS_PLUGIN_VERSION
 		);
 
 		// Enqueue banner JS.
 		wp_enqueue_script(
 			'ets-preview-banner',
-			ETS_PLUGIN_URL . 'assets/dist/js/ets-preview-banner.js',
+			STS_PLUGIN_URL . 'assets/dist/js/ets-preview-banner.js',
 			array( 'jquery' ),
-			ETS_PLUGIN_VERSION,
+			STS_PLUGIN_VERSION,
 			true
 		);
 
@@ -112,13 +112,13 @@ class PreviewBanner {
 	public function ajax_switch_theme() {
 		// Check nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ets-preview-banner-nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'easy-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
 		}
 
 		// Check permissions.
 		$theme_switcher = new ThemeSwitcher();
 		if ( ! $theme_switcher->can_user_preview() ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to preview themes.', 'easy-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to preview themes.', 'smart-theme-switcher' ) ) );
 		}
 
 		// Get theme from request.
@@ -126,7 +126,7 @@ class PreviewBanner {
 		
 		// Check if theme exists.
 		if ( empty( $theme ) || ! wp_get_theme( $theme )->exists() ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid theme selection.', 'easy-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid theme selection.', 'smart-theme-switcher' ) ) );
 		}
 
 		// Get current URL.
@@ -137,7 +137,7 @@ class PreviewBanner {
 		
 		// Send success response.
 		wp_send_json_success( array(
-			'message' => __( 'Theme switched successfully.', 'easy-theme-switcher' ),
+			'message' => __( 'Theme switched successfully.', 'smart-theme-switcher' ),
 			'url'     => $new_url,
 		) );
 	}

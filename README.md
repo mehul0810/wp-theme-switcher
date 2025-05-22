@@ -1,4 +1,4 @@
-# Easy Theme Switcher
+# Smart Theme Switcher
 
 **Preview, test, and assign any installed WordPress theme to individual pages, posts, or taxonomy archives—privately and instantly. Build and redesign without affecting your live site!**
 
@@ -28,9 +28,9 @@
 
 ## 🛠️ Installation
 
-1. Upload the plugin to `/wp-content/plugins/easy-theme-switcher` directory.
+1. Upload the plugin to `/wp-content/plugins/smart-theme-switcher` directory.
 2. Activate via **Plugins > Installed Plugins** in WordPress admin.
-3. (Optional) Configure options under **Settings > Easy Theme Switcher**.
+3. (Optional) Configure options under **Settings > Smart Theme Switcher**.
 
 ---
 
@@ -40,7 +40,7 @@
 - **Set default preview theme**
 - (Advanced) **Change preview query parameter name**
 
-Accessible under **Settings > Easy Theme Switcher** (requires `manage_options` capability).
+Accessible under **Settings > Smart Theme Switcher** (requires `manage_options` capability).
 
 ---
 

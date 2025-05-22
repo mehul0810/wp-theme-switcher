@@ -2,11 +2,11 @@
 /**
  * Main Plugin Class
  *
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  * @since 1.0.0
  */
 
-namespace EasyThemeSwitcher;
+namespace SmartThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -55,10 +55,10 @@ final class Plugin {
 	 */
 	private function setup() {
 		// Register activation hook.
-		register_activation_hook( ETS_PLUGIN_FILE, array( $this, 'activate' ) );
+		register_activation_hook( STS_PLUGIN_FILE, array( $this, 'activate' ) );
 
 		// Register deactivation hook.
-		register_deactivation_hook( ETS_PLUGIN_FILE, array( $this, 'deactivate' ) );
+		register_deactivation_hook( STS_PLUGIN_FILE, array( $this, 'deactivate' ) );
 	}
 
 	/**
@@ -105,11 +105,11 @@ final class Plugin {
 		$default_options = array(
 			'enable_preview_banner' => 'yes',
 			'default_preview_theme' => '',
-			'preview_query_param'   => ETS_DEFAULT_QUERY_PARAM,
+			'preview_query_param'   => STS_DEFAULT_QUERY_PARAM,
 		);
 
 		// Add options if they don't exist.
-		add_option( 'ets_settings', $default_options );
+		add_option( 'sts_settings', $default_options );
 
 		// Flush rewrite rules.
 		flush_rewrite_rules();
@@ -134,9 +134,9 @@ final class Plugin {
 	 */
 	public function load_textdomain() {
 		load_plugin_textdomain(
-			'easy-theme-switcher',
+			'smart-theme-switcher',
 			false,
-			dirname( plugin_basename( ETS_PLUGIN_FILE ) ) . '/languages/'
+			dirname( plugin_basename( STS_PLUGIN_FILE ) ) . '/languages/'
 		);
 	}
 }

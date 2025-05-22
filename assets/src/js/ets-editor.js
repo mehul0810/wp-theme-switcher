@@ -1,7 +1,7 @@
 /**
  * Theme Switcher Block Editor Component
  * 
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  */
 
 (function( wp ) {

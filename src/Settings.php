@@ -2,11 +2,11 @@
 /**
  * Settings Class
  *
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  * @since 1.0.0
  */
 
-namespace EasyThemeSwitcher;
+namespace SmartThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -55,8 +55,8 @@ class Settings {
 	 */
 	public function register_settings() {
 		register_setting(
-			'ets_settings',
-			'ets_settings',
+			'sts_settings',
+			'sts_settings',
 			array(
 				'sanitize_callback' => array( $this, 'sanitize_settings' ),
 			)
@@ -86,7 +86,7 @@ class Settings {
 		// Preview query parameter.
 		$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] )
 			? sanitize_key( $input['preview_query_param'] )
-			: ETS_DEFAULT_QUERY_PARAM;
+			: STS_DEFAULT_QUERY_PARAM;
 
 		return $sanitized_input;
 	}
@@ -101,10 +101,10 @@ class Settings {
 		$default_settings = array(
 			'enable_preview_banner' => 'yes',
 			'default_preview_theme' => '',
-			'preview_query_param'   => ETS_DEFAULT_QUERY_PARAM,
+			'preview_query_param'   => STS_DEFAULT_QUERY_PARAM,
 		);
 
-		$settings = get_option( 'ets_settings', array() );
+		$settings = get_option( 'sts_settings', array() );
 		return wp_parse_args( $settings, $default_settings );
 	}
 
@@ -132,11 +132,11 @@ class Settings {
 		$sanitized_settings = $this->sanitize_settings( $settings );
 
 		// Update settings.
-		update_option( 'ets_settings', $sanitized_settings );
+		update_option( 'sts_settings', $sanitized_settings );
 
 		// Send success response.
 		wp_send_json_success( array(
-			'message'  => __( 'Settings saved successfully.', 'easy-theme-switcher' ),
+			'message'  => __( 'Settings saved successfully.', 'smart-theme-switcher' ),
 			'settings' => $sanitized_settings,
 		) );
 	}

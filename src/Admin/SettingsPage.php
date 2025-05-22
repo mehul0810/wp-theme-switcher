@@ -2,11 +2,11 @@
 /**
  * Settings Page Class
  *
- * @package EasyThemeSwitcher
+ * @package SmartThemeSwitcher
  * @since 1.0.0
  */
 
-namespace EasyThemeSwitcher\Admin;
+namespace SmartThemeSwitcher\Admin;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -54,10 +54,10 @@ class SettingsPage {
 	 */
 	public function add_settings_page() {
 		add_options_page(
-			__( 'Easy Theme Switcher Settings', 'easy-theme-switcher' ),
-			__( 'Easy Theme Switcher', 'easy-theme-switcher' ),
+			__( 'Smart Theme Switcher Settings', 'smart-theme-switcher' ),
+			__( 'Smart Theme Switcher', 'smart-theme-switcher' ),
 			'manage_options',
-			'easy-theme-switcher',
+			'smart-theme-switcher',
 			array( $this, 'render_settings_page' )
 		);
 	}
@@ -86,7 +86,7 @@ class SettingsPage {
 	 */
 	public function enqueue_admin_scripts( $hook ) {
 		// Only enqueue on our settings page.
-		if ( 'settings_page_easy-theme-switcher' !== $hook ) {
+		if ( 'settings_page_smart-theme-switcher' !== $hook ) {
 			return;
 		}
 
@@ -118,24 +118,24 @@ class SettingsPage {
 			'etsSettings',
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'ets-settings-nonce' ),
+				'nonce'   => wp_create_nonce( 'sts-settings-nonce' ),
 				'strings' => array(
-					'save'                => __( 'Save Settings', 'easy-theme-switcher' ),
-					'saving'              => __( 'Saving...', 'easy-theme-switcher' ),
-					'saved'               => __( 'Settings Saved', 'easy-theme-switcher' ),
-					'error'               => __( 'Error Saving', 'easy-theme-switcher' ),
-					'enableBanner'        => __( 'Enable Preview Banner', 'easy-theme-switcher' ),
-					'enableBannerHelp'    => __( 'Display a banner at the top of the page when previewing a theme.', 'easy-theme-switcher' ),
-					'defaultTheme'        => __( 'Default Preview Theme', 'easy-theme-switcher' ),
-					'defaultThemeHelp'    => __( 'Select the default theme for new previews.', 'easy-theme-switcher' ),
-					'queryParam'          => __( 'Query Parameter', 'easy-theme-switcher' ),
-					'queryParamHelp'      => __( 'Customize the URL parameter used for theme previews.', 'easy-theme-switcher' ),
-					'settingsTitle'       => __( 'Easy Theme Switcher Settings', 'easy-theme-switcher' ),
-					'settingsDescription' => __( 'Configure how theme previews work on your site.', 'easy-theme-switcher' ),
-					'yes'                 => __( 'Yes', 'easy-theme-switcher' ),
-					'no'                  => __( 'No', 'easy-theme-switcher' ),
-					'loading'             => __( 'Loading...', 'easy-theme-switcher' ),
-					'selectTheme'         => __( 'Select a theme...', 'easy-theme-switcher' ),
+					'save'                => __( 'Save Settings', 'smart-theme-switcher' ),
+					'saving'              => __( 'Saving...', 'smart-theme-switcher' ),
+					'saved'               => __( 'Settings Saved', 'smart-theme-switcher' ),
+					'error'               => __( 'Error Saving', 'smart-theme-switcher' ),
+					'enableBanner'        => __( 'Enable Preview Banner', 'smart-theme-switcher' ),
+					'enableBannerHelp'    => __( 'Display a banner at the top of the page when previewing a theme.', 'smart-theme-switcher' ),
+					'defaultTheme'        => __( 'Default Preview Theme', 'smart-theme-switcher' ),
+					'defaultThemeHelp'    => __( 'Select the default theme for new previews.', 'smart-theme-switcher' ),
+					'queryParam'          => __( 'Query Parameter', 'smart-theme-switcher' ),
+					'queryParamHelp'      => __( 'Customize the URL parameter used for theme previews.', 'smart-theme-switcher' ),
+					'settingsTitle'       => __( 'Smart Theme Switcher Settings', 'smart-theme-switcher' ),
+					'settingsDescription' => __( 'Configure how theme previews work on your site.', 'smart-theme-switcher' ),
+					'yes'                 => __( 'Yes', 'smart-theme-switcher' ),
+					'no'                  => __( 'No', 'smart-theme-switcher' ),
+					'loading'             => __( 'Loading...', 'smart-theme-switcher' ),
+					'selectTheme'         => __( 'Select a theme...', 'smart-theme-switcher' ),
 				),
 			)
 		);
