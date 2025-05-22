@@ -7,6 +7,7 @@
 # Build files
 /build/
 /dist/
+assets/dist/
 
 # WordPress
 /wp-admin/
