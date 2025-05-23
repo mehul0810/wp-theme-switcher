@@ -57,6 +57,17 @@ class Settings {
 	 * @return void
 	 */
 	public function register_settings() {
+		// Register the new option
+		register_setting(
+			'smart_theme_switcher_settings',
+			'smart_theme_switcher_settings',
+			array(
+				'sanitize_callback' => array( $this, 'sanitize_settings' ),
+				'show_in_rest'      => false,
+			)
+		);
+		
+		// Register the legacy option for backward compatibility
 		register_setting(
 			'sts_settings',
 			'sts_settings',
@@ -81,16 +92,26 @@ class Settings {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'rest_get_settings' ),
-					'permission_callback' => function() {
-						return current_user_can( 'manage_options' );
-					},
+					'permission_callback' => array( $this, 'rest_permission_check' ),
 				),
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'rest_update_settings' ),
-					'permission_callback' => function() {
-						return current_user_can( 'manage_options' );
-					},
+					'permission_callback' => array( $this, 'rest_permission_check' ),
+					'args'                => array(
+						'post_types' => array(
+							'type'        => 'object',
+							'required'    => false,
+						),
+						'taxonomies' => array(
+							'type'        => 'object',
+							'required'    => false,
+						),
+						'advanced'   => array(
+							'type'        => 'object',
+							'required'    => false,
+						),
+					),
 				),
 			)
 		);
@@ -101,9 +122,7 @@ class Settings {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'rest_get_post_types' ),
-				'permission_callback' => function() {
-					return current_user_can( 'manage_options' );
-				},
+				'permission_callback' => array( $this, 'rest_permission_check' ),
 			)
 		);
 
@@ -113,9 +132,7 @@ class Settings {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'rest_get_taxonomies' ),
-				'permission_callback' => function() {
-					return current_user_can( 'manage_options' );
-				},
+				'permission_callback' => array( $this, 'rest_permission_check' ),
 			)
 		);
 
@@ -125,11 +142,19 @@ class Settings {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'rest_get_themes' ),
-				'permission_callback' => function() {
-					return current_user_can( 'manage_options' );
-				},
+				'permission_callback' => array( $this, 'rest_permission_check' ),
 			)
 		);
+	}
+	
+	/**
+	 * Permission callback for REST API endpoints.
+	 *
+	 * @since 1.0.0
+	 * @return bool
+	 */
+	public function rest_permission_check() {
+		return current_user_can( 'manage_options' );
 	}
 
 	/**
@@ -137,10 +162,21 @@ class Settings {
 	 *
 	 * @since 1.0.0
 	 * @param \WP_REST_Request $request REST API request.
-	 * @return \WP_REST_Response
+	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function rest_get_settings( $request ) {
-		return rest_ensure_response( $this->get_settings() );
+		// Get settings from database
+		$settings = $this->get_settings();
+		
+		if ( empty( $settings ) ) {
+			return new \WP_Error(
+				'settings_not_found',
+				__( 'Settings could not be retrieved.', 'smart-theme-switcher' ),
+				array( 'status' => 404 )
+			);
+		}
+		
+		return rest_ensure_response( $settings );
 	}
 
 	/**
@@ -219,24 +255,63 @@ class Settings {
 	 *
 	 * @since 1.0.0
 	 * @param \WP_REST_Request $request REST API request.
-	 * @return \WP_REST_Response
+	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function rest_update_settings( $request ) {
+		// Verify the nonce in request headers
+		$nonce = $request->get_header( 'X-WP-Nonce' );
+		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+			return new \WP_Error(
+				'invalid_nonce',
+				__( 'Invalid security token. Please refresh the page and try again.', 'smart-theme-switcher' ),
+				array( 'status' => 403 )
+			);
+		}
+		
+		// Get JSON parameters from request
 		$settings = $request->get_json_params();
 		
 		if ( empty( $settings ) ) {
-			return new \WP_Error( 'invalid_settings', __( 'Invalid settings data.', 'smart-theme-switcher' ), array( 'status' => 400 ) );
+			return new \WP_Error(
+				'invalid_settings',
+				__( 'Invalid settings data.', 'smart-theme-switcher' ),
+				array( 'status' => 400 )
+			);
 		}
 
-		// Sanitize and save settings.
+		// Sanitize and save settings
 		$sanitized_settings = $this->sanitize_settings( $settings );
+		
+		// Save settings to database
+		$updated = update_option( 'smart_theme_switcher_settings', $sanitized_settings );
+		
+		// Also update legacy option for backward compatibility
 		update_option( 'sts_settings', $sanitized_settings );
+		
+		if ( ! $updated && $sanitized_settings === get_option( 'smart_theme_switcher_settings' ) ) {
+			// No update needed because settings unchanged
+			return rest_ensure_response(
+				array(
+					'success'  => true,
+					'message'  => __( 'No changes detected in settings.', 'smart-theme-switcher' ),
+					'settings' => $sanitized_settings,
+				)
+			);
+		} elseif ( ! $updated ) {
+			return new \WP_Error(
+				'settings_not_saved',
+				__( 'Failed to save settings. Please try again.', 'smart-theme-switcher' ),
+				array( 'status' => 500 )
+			);
+		}
 
-		return rest_ensure_response( array(
-			'success'  => true,
-			'message'  => __( 'Settings saved successfully.', 'smart-theme-switcher' ),
-			'settings' => $sanitized_settings,
-		) );
+		return rest_ensure_response(
+			array(
+				'success'  => true,
+				'message'  => __( 'Settings saved successfully.', 'smart-theme-switcher' ),
+				'settings' => $sanitized_settings,
+			)
+		);
 	}
 
 	/**
@@ -276,6 +351,11 @@ class Settings {
 			$sanitized_input['post_types'] = array();
 			
 			foreach ( $input['post_types'] as $post_type => $settings ) {
+				// Skip if post type is not valid
+				if ( ! post_type_exists( sanitize_key( $post_type ) ) && 'post' !== $post_type && 'page' !== $post_type ) {
+					continue;
+				}
+				
 				$sanitized_input['post_types'][ sanitize_key( $post_type ) ] = array(
 					'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
 					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
@@ -288,6 +368,11 @@ class Settings {
 			$sanitized_input['taxonomies'] = array();
 			
 			foreach ( $input['taxonomies'] as $taxonomy => $settings ) {
+				// Skip if taxonomy is not valid
+				if ( ! taxonomy_exists( sanitize_key( $taxonomy ) ) && 'category' !== $taxonomy && 'post_tag' !== $taxonomy ) {
+					continue;
+				}
+				
 				$sanitized_input['taxonomies'][ sanitize_key( $taxonomy ) ] = array(
 					'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
 					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
@@ -313,7 +398,7 @@ class Settings {
 		}
 
 		// For backward compatibility, maintain the old settings structure as well.
-		$sanitized_input['enable_preview_banner'] = isset( $input['advanced']['preview_enabled'] ) && $input['advanced']['preview_enabled'] ? 'yes' : 'no';
+		$sanitized_input['enable_preview_banner'] = isset( $sanitized_input['advanced']['preview_enabled'] ) && $sanitized_input['advanced']['preview_enabled'] ? 'yes' : 'no';
 		$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] ) ? sanitize_key( $input['preview_query_param'] ) : STS_DEFAULT_QUERY_PARAM;
 		$sanitized_input['default_preview_theme'] = isset( $input['default_preview_theme'] ) ? sanitize_text_field( $input['default_preview_theme'] ) : '';
 
@@ -342,13 +427,25 @@ class Settings {
 			),
 		);
 
-		// Get stored settings.
-		$settings = get_option( 'sts_settings', array() );
+		// Try to get settings from new option name first
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		
+		// If no settings found in new location, try the legacy option
+		if ( empty( $settings ) ) {
+			$settings = get_option( 'sts_settings', array() );
+			
+			// If we found settings in the legacy location, migrate them to the new location
+			if ( ! empty( $settings ) ) {
+				update_option( 'smart_theme_switcher_settings', $settings );
+			}
+		}
+		
+		// Parse with default settings
 		$settings = wp_parse_args( $settings, $default_legacy_settings );
 
-		// Handle upgrade from old format to new format if needed.
+		// Handle upgrade from old format to new format if needed
 		if ( ! isset( $settings['post_types'] ) ) {
-			// Add default post types and taxonomies settings.
+			// Add default post types and taxonomies settings
 			$post_types = get_post_types( array( 'public' => true ), 'objects' );
 			foreach ( $post_types as $post_type ) {
 				if ( 'attachment' === $post_type->name ) {
@@ -368,11 +465,15 @@ class Settings {
 				);
 			}
 
-			// Convert legacy settings to new format.
+			// Convert legacy settings to new format
 			$default_settings['advanced']['preview_enabled'] = 'yes' === $settings['enable_preview_banner'];
 			
-			// Merge old and new settings.
+			// Merge old and new settings
 			$settings = array_merge( $settings, $default_settings );
+			
+			// Save the updated settings
+			update_option( 'smart_theme_switcher_settings', $settings );
+			update_option( 'sts_settings', $settings ); // For backward compatibility
 		}
 
 		return $settings;
@@ -401,7 +502,8 @@ class Settings {
 		// Sanitize settings.
 		$sanitized_settings = $this->sanitize_settings( $settings );
 
-		// Update settings.
+		// Update settings in both locations for compatibility.
+		update_option( 'smart_theme_switcher_settings', $sanitized_settings );
 		update_option( 'sts_settings', $sanitized_settings );
 
 		// Send success response.
