@@ -93,9 +93,9 @@ class SettingsPage {
 		// Enqueue React and settings script.
 		wp_enqueue_script(
 			'ets-settings',
-			ETS_PLUGIN_URL . 'assets/dist/js/ets-settings.js',
+			STS_PLUGIN_URL . 'assets/dist/js/ets-settings.js',
 			array( 'wp-element', 'wp-components', 'wp-api-fetch' ),
-			ETS_PLUGIN_VERSION,
+			STS_PLUGIN_VERSION,
 			true
 		);
 
@@ -107,9 +107,9 @@ class SettingsPage {
 		// Enqueue settings CSS.
 		wp_enqueue_style(
 			'ets-settings',
-			ETS_PLUGIN_URL . 'assets/dist/css/ets-settings.css',
+			STS_PLUGIN_URL . 'assets/dist/css/ets-settings.css',
 			array( 'wp-components' ),
-			ETS_PLUGIN_VERSION
+			STS_PLUGIN_VERSION
 		);
 
 		// Localize script.

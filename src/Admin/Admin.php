@@ -42,7 +42,7 @@ class Admin {
 	 */
 	private function init_hooks() {
 		// Add settings link to plugins page.
-		add_filter( 'plugin_action_links_' . plugin_basename( ETS_PLUGIN_FILE ), array( $this, 'add_settings_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( STS_PLUGIN_FILE ), array( $this, 'add_settings_link' ) );
 		
 		// Add admin bar menu.
 		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_menu' ), 999 );

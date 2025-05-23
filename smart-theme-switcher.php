@@ -91,9 +91,6 @@ class_alias( 'SmartThemeSwitcher\\Plugin', 'Smart_Theme_Switcher' );
  * @since 1.0.0
  * @return \SmartThemeSwitcher\Plugin
  */
-function STS() {
+add_action( 'plugins_loaded', function() {
 	return \SmartThemeSwitcher\Plugin::instance();
-}
-
-// Initialize the plugin.
-STS();
+});
