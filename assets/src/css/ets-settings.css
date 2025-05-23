@@ -147,16 +147,10 @@
 /* Advanced Tab */
 .sts-advanced-panel {
     background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 2px;
-    padding: 16px;
+    margin-top: 20px;
 }
-
-.sts-advanced-panel h3 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    font-size: 14px;
-    font-weight: 600;
+.sts-advanced-panel .components-card__body {
+    padding: 20px;
 }
 
 /* Footer */

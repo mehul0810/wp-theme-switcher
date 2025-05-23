@@ -208,31 +208,26 @@ import '../css/ets-settings.css';
             <div className="sts-advanced-tab">
                 <Card className="sts-advanced-panel">
                     <CardBody>
-                        <h3>{__('Global Settings', 'smart-theme-switcher')}</h3>
-                        <PanelRow>
-                            <ToggleControl
-                                label={stsSettings.strings.enableThemePreview}
-                                checked={advancedSettings.preview_enabled}
-                                onChange={(preview_enabled) => {
-                                    onSettingChange('advanced', {
-                                        ...advancedSettings,
-                                        preview_enabled
-                                    });
-                                }}
-                            />
-                        </PanelRow>
-                        <PanelRow>
-                            <ToggleControl
-                                label={stsSettings.strings.enableDebugging}
-                                checked={advancedSettings.debug_enabled}
-                                onChange={(debug_enabled) => {
-                                    onSettingChange('advanced', {
-                                        ...advancedSettings,
-                                        debug_enabled
-                                    });
-                                }}
-                            />
-                        </PanelRow>
+                        <ToggleControl
+                            label={stsSettings.strings.enableThemePreview}
+                            checked={advancedSettings.preview_enabled}
+                            onChange={(preview_enabled) => {
+                                onSettingChange('advanced', {
+                                    ...advancedSettings,
+                                    preview_enabled
+                                });
+                            }}
+                        />
+                        <ToggleControl
+                            label={stsSettings.strings.enableDebugging}
+                            checked={advancedSettings.debug_enabled}
+                            onChange={(debug_enabled) => {
+                                onSettingChange('advanced', {
+                                    ...advancedSettings,
+                                    debug_enabled
+                                });
+                            }}
+                        />
                     </CardBody>
                 </Card>
             </div>
