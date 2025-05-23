@@ -173,6 +173,10 @@ import '../css/ets-settings.css';
      * General Tab Component
      */
     const GeneralTab = ({ settings, postTypes, taxonomies, onSettingChange }) => {
+        // Defensive: Ensure settings.post_types and settings.taxonomies are always objects
+        const safePostTypes = (settings && typeof settings.post_types === 'object' && settings.post_types !== null) ? settings.post_types : {};
+        const safeTaxonomies = (settings && typeof settings.taxonomies === 'object' && settings.taxonomies !== null) ? settings.taxonomies : {};
+
         return (
             <div className="sts-general-tab">
                 <h3>{__('Post Types', 'smart-theme-switcher')}</h3>
@@ -180,7 +184,7 @@ import '../css/ets-settings.css';
                     <PostTypePanel 
                         key={postType.name}
                         postType={postType}
-                        settings={settings}
+                        settings={{ ...settings, post_types: safePostTypes }}
                         onSettingChange={onSettingChange}
                     />
                 ))}
@@ -190,7 +194,7 @@ import '../css/ets-settings.css';
                     <TaxonomyPanel
                         key={taxonomy.name}
                         taxonomy={taxonomy}
-                        settings={settings}
+                        settings={{ ...settings, taxonomies: safeTaxonomies }}
                         onSettingChange={onSettingChange}
                     />
                 ))}
@@ -271,36 +275,20 @@ import '../css/ets-settings.css';
         // Load settings and data on component mount
         useEffect(() => {
             Promise.all([
-                // Load settings
                 fetch(`${stsSettings.restUrl}/settings`, {
-                    headers: {
-                        'X-WP-Nonce': stsSettings.nonce
-                    }
+                    headers: { 'X-WP-Nonce': stsSettings.nonce }
                 }).then(response => response.json()),
-                
-                // Load post types
                 fetch(`${stsSettings.restUrl}/post-types`, {
-                    headers: {
-                        'X-WP-Nonce': stsSettings.nonce
-                    }
+                    headers: { 'X-WP-Nonce': stsSettings.nonce }
                 }).then(response => response.json()),
-                
-                // Load taxonomies
                 fetch(`${stsSettings.restUrl}/taxonomies`, {
-                    headers: {
-                        'X-WP-Nonce': stsSettings.nonce
-                    }
+                    headers: { 'X-WP-Nonce': stsSettings.nonce }
                 }).then(response => response.json()),
-                
-                // Load themes
                 fetch(`${stsSettings.restUrl}/themes`, {
-                    headers: {
-                        'X-WP-Nonce': stsSettings.nonce
-                    }
+                    headers: { 'X-WP-Nonce': stsSettings.nonce }
                 }).then(response => response.json())
             ])
             .then(([settingsData, postTypesData, taxonomiesData, themesData]) => {
-                // Update state with fetched data
                 setSettings({
                     ...settingsData,
                     themes: themesData
@@ -308,6 +296,12 @@ import '../css/ets-settings.css';
                 setPostTypes(postTypesData);
                 setTaxonomies(taxonomiesData);
                 setIsLoading(false);
+                // Set activeTab from URL after loading (fixes tab reset issue)
+                const params = new URLSearchParams(window.location.search);
+                const tabParam = params.get('tab');
+                if (tabParam && (tabParam.toLowerCase() === 'advanced' || tabParam.toLowerCase() === 'general')) {
+                    setActiveTab(tabParam.toLowerCase());
+                }
             })
             .catch(error => {
                 console.error('Error loading data:', error);

@@ -110,9 +110,6 @@ final class Plugin {
 
 		// Add options if they don't exist.
 		add_option( 'smart_theme_switcher_settings', $default_options );
-		
-		// For backward compatibility.
-		add_option( 'sts_settings', $default_options );
 
 		// Flush rewrite rules.
 		flush_rewrite_rules();

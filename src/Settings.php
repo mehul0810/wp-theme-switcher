@@ -66,16 +66,6 @@ class Settings {
 				'show_in_rest'      => false,
 			)
 		);
-		
-		// Register the legacy option for backward compatibility
-		register_setting(
-			'sts_settings',
-			'sts_settings',
-			array(
-				'sanitize_callback' => array( $this, 'sanitize_settings' ),
-				'show_in_rest'      => false,
-			)
-		);
 	}
 
 	/**
@@ -258,60 +248,17 @@ class Settings {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function rest_update_settings( $request ) {
-		// Verify the nonce in request headers
-		$nonce = $request->get_header( 'X-WP-Nonce' );
-		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-			return new \WP_Error(
-				'invalid_nonce',
-				__( 'Invalid security token. Please refresh the page and try again.', 'smart-theme-switcher' ),
-				array( 'status' => 403 )
-			);
+		$params = $request->get_json_params();
+		// Only allow expected keys
+		$allowed = array('post_types', 'taxonomies', 'advanced', 'enable_preview_banner', 'default_preview_theme', 'preview_query_param');
+		$settings = array();
+		foreach ( $allowed as $key ) {
+			if ( isset( $params[ $key ] ) ) {
+				$settings[ $key ] = $params[ $key ];
+			}
 		}
-		
-		// Get JSON parameters from request
-		$settings = $request->get_json_params();
-		
-		if ( empty( $settings ) ) {
-			return new \WP_Error(
-				'invalid_settings',
-				__( 'Invalid settings data.', 'smart-theme-switcher' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		// Sanitize and save settings
-		$sanitized_settings = $this->sanitize_settings( $settings );
-		
-		// Save settings to database
-		$updated = update_option( 'smart_theme_switcher_settings', $sanitized_settings );
-		
-		// Also update legacy option for backward compatibility
-		update_option( 'sts_settings', $sanitized_settings );
-		
-		if ( ! $updated && $sanitized_settings === get_option( 'smart_theme_switcher_settings' ) ) {
-			// No update needed because settings unchanged
-			return rest_ensure_response(
-				array(
-					'success'  => true,
-					'message'  => __( 'No changes detected in settings.', 'smart-theme-switcher' ),
-					'settings' => $sanitized_settings,
-				)
-			);
-		} elseif ( ! $updated ) {
-			return new \WP_Error(
-				'settings_not_saved',
-				__( 'Failed to save settings. Please try again.', 'smart-theme-switcher' ),
-				array( 'status' => 500 )
-			);
-		}
-
-		return rest_ensure_response(
-			array(
-				'success'  => true,
-				'message'  => __( 'Settings saved successfully.', 'smart-theme-switcher' ),
-				'settings' => $sanitized_settings,
-			)
-		);
+		update_option( 'smart_theme_switcher_settings', $settings );
+		return rest_ensure_response( array( 'success' => true, 'settings' => $settings ) );
 	}
 
 	/**
@@ -406,77 +353,15 @@ class Settings {
 	}
 
 	/**
-	 * Get settings.
+	 * Get settings from the database.
 	 *
 	 * @since 1.0.0
 	 * @return array
 	 */
 	public function get_settings() {
-		$default_legacy_settings = array(
-			'enable_preview_banner' => 'yes',
-			'default_preview_theme' => '',
-			'preview_query_param'   => STS_DEFAULT_QUERY_PARAM,
-		);
-
-		$default_settings = array(
-			'post_types' => array(),
-			'taxonomies' => array(),
-			'advanced'   => array(
-				'preview_enabled' => true,
-				'debug_enabled'   => false,
-			),
-		);
-
-		// Try to get settings from new option name first
+		// Always use the unified option key
 		$settings = get_option( 'smart_theme_switcher_settings', array() );
-		
-		// If no settings found in new location, try the legacy option
-		if ( empty( $settings ) ) {
-			$settings = get_option( 'sts_settings', array() );
-			
-			// If we found settings in the legacy location, migrate them to the new location
-			if ( ! empty( $settings ) ) {
-				update_option( 'smart_theme_switcher_settings', $settings );
-			}
-		}
-		
-		// Parse with default settings
-		$settings = wp_parse_args( $settings, $default_legacy_settings );
-
-		// Handle upgrade from old format to new format if needed
-		if ( ! isset( $settings['post_types'] ) ) {
-			// Add default post types and taxonomies settings
-			$post_types = get_post_types( array( 'public' => true ), 'objects' );
-			foreach ( $post_types as $post_type ) {
-				if ( 'attachment' === $post_type->name ) {
-					continue;
-				}
-				$default_settings['post_types'][ $post_type->name ] = array(
-					'enabled' => false,
-					'theme'   => 'use_active',
-				);
-			}
-
-			$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
-			foreach ( $taxonomies as $taxonomy ) {
-				$default_settings['taxonomies'][ $taxonomy->name ] = array(
-					'enabled' => false,
-					'theme'   => 'use_active',
-				);
-			}
-
-			// Convert legacy settings to new format
-			$default_settings['advanced']['preview_enabled'] = 'yes' === $settings['enable_preview_banner'];
-			
-			// Merge old and new settings
-			$settings = array_merge( $settings, $default_settings );
-			
-			// Save the updated settings
-			update_option( 'smart_theme_switcher_settings', $settings );
-			update_option( 'sts_settings', $settings ); // For backward compatibility
-		}
-
-		return $settings;
+		return is_array( $settings ) ? $settings : array();
 	}
 
 	/**
@@ -487,9 +372,7 @@ class Settings {
 	 */
 	public function ajax_save_settings() {
 		// Check nonce.
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ets-settings-nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
-		}
+		$this->check_nonce( 'ets-settings-nonce' );
 
 		// Check permissions.
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -504,7 +387,6 @@ class Settings {
 
 		// Update settings in both locations for compatibility.
 		update_option( 'smart_theme_switcher_settings', $sanitized_settings );
-		update_option( 'sts_settings', $sanitized_settings );
 
 		// Send success response.
 		wp_send_json_success( array(
@@ -521,9 +403,7 @@ class Settings {
 	 */
 	public function ajax_get_settings() {
 		// Check nonce.
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ets-settings-nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
-		}
+		$this->check_nonce( 'ets-settings-nonce' );
 
 		// Check permissions.
 		if ( ! current_user_can( 'manage_options' ) ) {
