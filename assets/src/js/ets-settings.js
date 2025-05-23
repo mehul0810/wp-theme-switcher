@@ -4,6 +4,8 @@
  * @package SmartThemeSwitcher
  */
 
+import '../css/ets-settings.css';
+
 (function (wp) {
     const { __ } = wp.i18n;
     const { render, useState, useEffect } = wp.element;

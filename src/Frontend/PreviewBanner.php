@@ -75,7 +75,7 @@ class PreviewBanner {
 		// Enqueue banner CSS.
 		wp_enqueue_style(
 			'ets-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/css/ets-preview-banner.css',
+			STS_PLUGIN_URL . 'assets/dist/ets-preview-banner.css',
 			array(),
 			STS_PLUGIN_VERSION
 		);
@@ -83,7 +83,7 @@ class PreviewBanner {
 		// Enqueue banner JS.
 		wp_enqueue_script(
 			'ets-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/js/ets-preview-banner.js',
+			STS_PLUGIN_URL . 'assets/dist/ets-preview-banner.js',
 			array( 'jquery' ),
 			STS_PLUGIN_VERSION,
 			true

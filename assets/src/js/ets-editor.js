@@ -4,6 +4,8 @@
  * @package SmartThemeSwitcher
  */
 
+import '../css/ets-editor.css';
+
 (function( wp ) {
 	const { __ } = wp.i18n;
 	const { registerPlugin } = wp.plugins;

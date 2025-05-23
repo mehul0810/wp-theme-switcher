@@ -196,7 +196,7 @@ class ThemeSwitcher {
 		// Enqueue preview CSS.
 		wp_enqueue_style(
 			'ets-preview',
-			STS_PLUGIN_URL . 'assets/dist/css/ets-preview.css',
+			STS_PLUGIN_URL . 'assets/dist/ets-preview.css',
 			array(),
 			STS_PLUGIN_VERSION
 		);
@@ -204,7 +204,7 @@ class ThemeSwitcher {
 		// Enqueue preview JS.
 		wp_enqueue_script(
 			'ets-preview',
-			STS_PLUGIN_URL . 'assets/dist/js/ets-preview.js',
+			STS_PLUGIN_URL . 'assets/dist/ets-preview.js',
 			array( 'jquery' ),
 			STS_PLUGIN_VERSION,
 			true

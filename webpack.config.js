@@ -11,6 +11,6 @@ module.exports = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(process.cwd(), 'assets/dist/js'),
+    path: path.resolve(process.cwd(), 'assets/dist'), // Output to dist root
   },
 };

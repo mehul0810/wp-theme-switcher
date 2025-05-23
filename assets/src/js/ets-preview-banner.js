@@ -1,3 +1,5 @@
+import '../css/ets-preview-banner.css';
+
 /**
  * Preview Banner Functionality
  * 

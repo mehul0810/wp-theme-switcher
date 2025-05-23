@@ -71,7 +71,7 @@ class SettingsPage {
 	public function render_settings_page() {
 		// Modern, no wrapper approach - just the container for React to render in.
 		?>
-		<div id="sts-settings-app"></div>
+		<div id="sts-settings-app" class="sts-settings-app-wrap"></div>
 		<?php
 	}
 
@@ -91,7 +91,7 @@ class SettingsPage {
 		// Enqueue React and settings script.
 		wp_enqueue_script(
 			'sts-settings',
-			STS_PLUGIN_URL . 'assets/dist/js/ets-settings.js',
+			STS_PLUGIN_URL . 'assets/dist/ets-settings.js',
 			array( 
 				'wp-element', 
 				'wp-components', 
@@ -110,7 +110,7 @@ class SettingsPage {
 		// Enqueue settings CSS.
 		wp_enqueue_style(
 			'sts-settings',
-			STS_PLUGIN_URL . 'assets/dist/css/ets-settings.css',
+			STS_PLUGIN_URL . 'assets/dist/ets-settings.css',
 			array( 'wp-components' ),
 			STS_PLUGIN_VERSION
 		);

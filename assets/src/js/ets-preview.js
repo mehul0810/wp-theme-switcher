@@ -1,3 +1,5 @@
+import '../css/ets-preview.css';
+
 /**
  * Frontend Preview Functionality
  * 
