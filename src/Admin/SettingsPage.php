@@ -69,11 +69,9 @@ class SettingsPage {
 	 * @return void
 	 */
 	public function render_settings_page() {
+		// Modern, no wrapper approach - just the container for React to render in.
 		?>
-		<div class="wrap">
-			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-			<div id="ets-settings-app"></div>
-		</div>
+		<div id="sts-settings-app"></div>
 		<?php
 	}
 
@@ -92,50 +90,83 @@ class SettingsPage {
 
 		// Enqueue React and settings script.
 		wp_enqueue_script(
-			'ets-settings',
+			'sts-settings',
 			STS_PLUGIN_URL . 'assets/dist/js/ets-settings.js',
-			array( 'wp-element', 'wp-components', 'wp-api-fetch' ),
+			array( 
+				'wp-element', 
+				'wp-components', 
+				'wp-api-fetch', 
+				'wp-i18n',
+				'wp-data',
+				'wp-notices',
+			),
 			STS_PLUGIN_VERSION,
 			true
 		);
 
 		// Enqueue WP components CSS.
-		wp_enqueue_style(
-			'wp-components'
-		);
+		wp_enqueue_style( 'wp-components' );
 
 		// Enqueue settings CSS.
 		wp_enqueue_style(
-			'ets-settings',
+			'sts-settings',
 			STS_PLUGIN_URL . 'assets/dist/css/ets-settings.css',
 			array( 'wp-components' ),
 			STS_PLUGIN_VERSION
 		);
 
-		// Localize script.
+		// Localize script with data and REST API endpoints.
 		wp_localize_script(
-			'ets-settings',
-			'etsSettings',
+			'sts-settings',
+			'stsSettings',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'sts-settings-nonce' ),
-				'strings' => array(
+				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+				'restUrl'     => esc_url_raw( rest_url( 'smart-theme-switcher/v1' ) ),
+				'nonce'       => wp_create_nonce( 'wp_rest' ),
+				'ajaxNonce'   => wp_create_nonce( 'sts-settings-nonce' ), // For backward compatibility
+				'version'     => STS_PLUGIN_VERSION,
+				'adminUrl'    => admin_url(),
+				'docUrl'      => 'https://github.com/mehul0810/smart-theme-switcher',
+				'strings'     => array(
+					// Header.
+					'pluginName'          => __( 'Smart Theme Switcher', 'smart-theme-switcher' ),
+					'settingsTitle'       => __( 'Settings', 'smart-theme-switcher' ),
+					'viewDocs'            => __( 'View Documentation', 'smart-theme-switcher' ),
+					
+					// Tabs.
+					'generalTab'          => __( 'General', 'smart-theme-switcher' ),
+					'advancedTab'         => __( 'Advanced', 'smart-theme-switcher' ),
+					
+					// Post Types & Taxonomies.
+					'enableForPostType'   => __( 'Enable theme preview for this post type', 'smart-theme-switcher' ),
+					'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'smart-theme-switcher' ),
+					'selectTheme'         => __( 'Select theme', 'smart-theme-switcher' ),
+					
+					// Advanced settings.
+					'enableThemePreview'  => __( 'Enable Theme Preview', 'smart-theme-switcher' ),
+					'enableDebugging'     => __( 'Enable Debugging', 'smart-theme-switcher' ),
+					
+					// Actions.
 					'save'                => __( 'Save Settings', 'smart-theme-switcher' ),
 					'saving'              => __( 'Saving...', 'smart-theme-switcher' ),
 					'saved'               => __( 'Settings Saved', 'smart-theme-switcher' ),
-					'error'               => __( 'Error Saving', 'smart-theme-switcher' ),
+					
+					// Messages.
+					'loading'             => __( 'Loading...', 'smart-theme-switcher' ),
+					'error'               => __( 'Error Saving Settings', 'smart-theme-switcher' ),
+					'success'             => __( 'Settings saved successfully!', 'smart-theme-switcher' ),
+					
+					// Legacy strings.
 					'enableBanner'        => __( 'Enable Preview Banner', 'smart-theme-switcher' ),
 					'enableBannerHelp'    => __( 'Display a banner at the top of the page when previewing a theme.', 'smart-theme-switcher' ),
 					'defaultTheme'        => __( 'Default Preview Theme', 'smart-theme-switcher' ),
 					'defaultThemeHelp'    => __( 'Select the default theme for new previews.', 'smart-theme-switcher' ),
 					'queryParam'          => __( 'Query Parameter', 'smart-theme-switcher' ),
 					'queryParamHelp'      => __( 'Customize the URL parameter used for theme previews.', 'smart-theme-switcher' ),
-					'settingsTitle'       => __( 'Smart Theme Switcher Settings', 'smart-theme-switcher' ),
 					'settingsDescription' => __( 'Configure how theme previews work on your site.', 'smart-theme-switcher' ),
 					'yes'                 => __( 'Yes', 'smart-theme-switcher' ),
 					'no'                  => __( 'No', 'smart-theme-switcher' ),
-					'loading'             => __( 'Loading...', 'smart-theme-switcher' ),
-					'selectTheme'         => __( 'Select a theme...', 'smart-theme-switcher' ),
+					'useActiveTheme'      => __( 'Use Active Theme', 'smart-theme-switcher' ),
 				),
 			)
 		);
