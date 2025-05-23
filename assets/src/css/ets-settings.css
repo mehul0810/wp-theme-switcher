@@ -4,75 +4,183 @@
  * @package SmartThemeSwitcher
  */
 
-.ets-settings-wrapper {
-    margin: 20px 0;
-    max-width: 800px;
+/* Reset WordPress admin margins */
+#wpcontent {
+    padding-left: 0 !important;
 }
 
-.ets-settings-loading {
+#wpbody-content {
+    padding-bottom: 0;
+}
+
+.auto-fold #wpcontent {
+    padding-left: 0;
+}
+
+/* Main app container */
+#sts-settings-app {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    color: #1e1e1e;
+    max-width: 100%;
+}
+
+/* Header styles */
+.sts-settings-header {
+    background-color: #fff;
+    padding: 0 16px;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    height: 60px;
+}
+
+.sts-settings-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.sts-settings-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.sts-plugin-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-right: 24px;
+}
+
+.sts-page-title {
+    font-size: 14px;
+    color: #757575;
+}
+
+.sts-version-badge {
+    font-size: 12px;
+    background-color: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #555;
+}
+
+.sts-doc-link {
+    text-decoration: none;
+    color: #007cba;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+}
+
+.sts-doc-link:hover {
+    color: #00669b;
+    text-decoration: underline;
+}
+
+/* Content area */
+.sts-settings-content {
+    padding: 0 24px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+/* Loading state */
+.sts-settings-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px;
-    background-color: #fff;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 80px 0;
 }
 
-.ets-settings-loading .components-spinner {
-    margin: 0 0 15px 0;
+.sts-settings-loading p {
+    margin-top: 16px;
+    color: #757575;
 }
 
-.ets-settings-loading p {
-    margin: 0;
-    color: #555;
-    font-size: 14px;
-}
-
-.ets-settings-wrapper .components-card__header {
-    border-bottom: 1px solid #e2e4e7;
-}
-
-.ets-settings-wrapper .components-card__header h2 {
-    margin: 0 0 8px;
-    font-size: 1.3em;
-    font-weight: 600;
-}
-
-.ets-settings-wrapper .components-card__header p {
-    margin: 0;
-    color: #555;
-}
-
-.ets-settings-wrapper .components-panel__body-title {
-    font-size: 1.1em;
-}
-
-.ets-settings-wrapper .components-base-control {
+/* Panel styles */
+.sts-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
 }
 
-.ets-settings-wrapper .components-panel__row {
+.sts-panel-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Tabs container */
+.sts-tabs-container {
+    margin-bottom: 24px;
+}
+
+/* Post types and taxonomies panels */
+.sts-post-type-panel,
+.sts-taxonomy-panel {
     margin-bottom: 16px;
 }
 
-.ets-settings-wrapper .components-panel__row:last-child {
-    margin-bottom: 0;
+.sts-post-type-panel .components-panel__row,
+.sts-taxonomy-panel .components-panel__row {
+    margin-bottom: 16px;
 }
 
-.ets-settings-wrapper .components-card__footer {
-    justify-content: flex-end;
+.sts-toggle-dropdown-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Advanced Tab */
+.sts-advanced-panel {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
     padding: 16px;
-    border-top: 1px solid #e2e4e7;
 }
 
-.ets-settings-wrapper .components-notice {
-    margin: 0 0 20px 0;
+.sts-advanced-panel h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-/* Settings specific controls */
-.ets-settings-wrapper .components-text-control__input {
-    width: 100%;
-    max-width: 300px;
+/* Footer */
+.sts-settings-footer {
+    margin-top: 32px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+    .sts-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .sts-panel-header-right {
+        margin-top: 12px;
+        width: 100%;
+    }
+    
+    .sts-toggle-dropdown-group {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .sts-toggle-dropdown-group .components-base-control {
+        width: 100%;
+    }
 }

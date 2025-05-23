@@ -42,7 +42,10 @@ class Settings {
 		// Register settings.
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		
-		// AJAX handlers.
+		// Register REST API routes.
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		
+		// Legacy AJAX handlers (for backward compatibility).
 		add_action( 'wp_ajax_ets_save_settings', array( $this, 'ajax_save_settings' ) );
 		add_action( 'wp_ajax_ets_get_settings', array( $this, 'ajax_get_settings' ) );
 	}
@@ -59,8 +62,181 @@ class Settings {
 			'sts_settings',
 			array(
 				'sanitize_callback' => array( $this, 'sanitize_settings' ),
+				'show_in_rest'      => false,
 			)
 		);
+	}
+
+	/**
+	 * Register REST API routes.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function register_rest_routes() {
+		register_rest_route(
+			'smart-theme-switcher/v1',
+			'/settings',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'rest_get_settings' ),
+					'permission_callback' => function() {
+						return current_user_can( 'manage_options' );
+					},
+				),
+				array(
+					'methods'             => \WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'rest_update_settings' ),
+					'permission_callback' => function() {
+						return current_user_can( 'manage_options' );
+					},
+				),
+			)
+		);
+
+		register_rest_route(
+			'smart-theme-switcher/v1',
+			'/post-types',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'rest_get_post_types' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+		register_rest_route(
+			'smart-theme-switcher/v1',
+			'/taxonomies',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'rest_get_taxonomies' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+		register_rest_route(
+			'smart-theme-switcher/v1',
+			'/themes',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'rest_get_themes' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+	}
+
+	/**
+	 * Handle REST API GET request for settings.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function rest_get_settings( $request ) {
+		return rest_ensure_response( $this->get_settings() );
+	}
+
+	/**
+	 * Handle REST API GET request for post types.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function rest_get_post_types( $request ) {
+		$post_types = get_post_types( array( 'public' => true ), 'objects' );
+		$result = array();
+
+		foreach ( $post_types as $post_type ) {
+			// Skip attachments and other non-content post types.
+			if ( 'attachment' === $post_type->name ) {
+				continue;
+			}
+
+			$result[ $post_type->name ] = array(
+				'name'  => $post_type->name,
+				'label' => $post_type->label,
+			);
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle REST API GET request for taxonomies.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function rest_get_taxonomies( $request ) {
+		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+		$result = array();
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$result[ $taxonomy->name ] = array(
+				'name'  => $taxonomy->name,
+				'label' => $taxonomy->label,
+			);
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Handle REST API GET request for themes.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function rest_get_themes( $request ) {
+		$themes_instance = new ThemeSwitcher();
+		$themes = $themes_instance->get_available_themes();
+
+		// Format themes for dropdown.
+		$formatted_themes = array(
+			'use_active' => __( 'Use Active Theme', 'smart-theme-switcher' ),
+		);
+
+		// Add all other themes.
+		foreach ( $themes as $slug => $name ) {
+			$formatted_themes[ $slug ] = $name;
+		}
+
+		return rest_ensure_response( $formatted_themes );
+	}
+
+	/**
+	 * Handle REST API PUT/POST request for settings.
+	 *
+	 * @since 1.0.0
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function rest_update_settings( $request ) {
+		$settings = $request->get_json_params();
+		
+		if ( empty( $settings ) ) {
+			return new \WP_Error( 'invalid_settings', __( 'Invalid settings data.', 'smart-theme-switcher' ), array( 'status' => 400 ) );
+		}
+
+		// Sanitize and save settings.
+		$sanitized_settings = $this->sanitize_settings( $settings );
+		update_option( 'sts_settings', $sanitized_settings );
+
+		return rest_ensure_response( array(
+			'success'  => true,
+			'message'  => __( 'Settings saved successfully.', 'smart-theme-switcher' ),
+			'settings' => $sanitized_settings,
+		) );
 	}
 
 	/**
@@ -73,20 +249,73 @@ class Settings {
 	public function sanitize_settings( $input ) {
 		$sanitized_input = array();
 
-		// Enable preview banner.
-		$sanitized_input['enable_preview_banner'] = isset( $input['enable_preview_banner'] )
-			? sanitize_text_field( $input['enable_preview_banner'] )
-			: 'yes';
+		// Handle legacy settings format.
+		if ( isset( $input['enable_preview_banner'] ) || isset( $input['default_preview_theme'] ) || isset( $input['preview_query_param'] ) ) {
+			// Enable preview banner.
+			$sanitized_input['enable_preview_banner'] = isset( $input['enable_preview_banner'] )
+				? sanitize_text_field( $input['enable_preview_banner'] )
+				: 'yes';
 
-		// Default preview theme.
-		$sanitized_input['default_preview_theme'] = isset( $input['default_preview_theme'] )
-			? sanitize_text_field( $input['default_preview_theme'] )
-			: '';
+			// Default preview theme.
+			$sanitized_input['default_preview_theme'] = isset( $input['default_preview_theme'] )
+				? sanitize_text_field( $input['default_preview_theme'] )
+				: '';
 
-		// Preview query parameter.
-		$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] )
-			? sanitize_key( $input['preview_query_param'] )
-			: STS_DEFAULT_QUERY_PARAM;
+			// Preview query parameter.
+			$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] )
+				? sanitize_key( $input['preview_query_param'] )
+				: STS_DEFAULT_QUERY_PARAM;
+
+			return $sanitized_input;
+		}
+
+		// New settings format.
+		
+		// Post types.
+		if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
+			$sanitized_input['post_types'] = array();
+			
+			foreach ( $input['post_types'] as $post_type => $settings ) {
+				$sanitized_input['post_types'][ sanitize_key( $post_type ) ] = array(
+					'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
+					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
+				);
+			}
+		}
+
+		// Taxonomies.
+		if ( isset( $input['taxonomies'] ) && is_array( $input['taxonomies'] ) ) {
+			$sanitized_input['taxonomies'] = array();
+			
+			foreach ( $input['taxonomies'] as $taxonomy => $settings ) {
+				$sanitized_input['taxonomies'][ sanitize_key( $taxonomy ) ] = array(
+					'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
+					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
+				);
+			}
+		}
+
+		// Advanced settings.
+		if ( isset( $input['advanced'] ) && is_array( $input['advanced'] ) ) {
+			$sanitized_input['advanced'] = array(
+				'preview_enabled' => isset( $input['advanced']['preview_enabled'] ) 
+					? (bool) $input['advanced']['preview_enabled'] 
+					: true,
+				'debug_enabled'   => isset( $input['advanced']['debug_enabled'] ) 
+					? (bool) $input['advanced']['debug_enabled'] 
+					: false,
+			);
+		} else {
+			$sanitized_input['advanced'] = array(
+				'preview_enabled' => true,
+				'debug_enabled'   => false,
+			);
+		}
+
+		// For backward compatibility, maintain the old settings structure as well.
+		$sanitized_input['enable_preview_banner'] = isset( $input['advanced']['preview_enabled'] ) && $input['advanced']['preview_enabled'] ? 'yes' : 'no';
+		$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] ) ? sanitize_key( $input['preview_query_param'] ) : STS_DEFAULT_QUERY_PARAM;
+		$sanitized_input['default_preview_theme'] = isset( $input['default_preview_theme'] ) ? sanitize_text_field( $input['default_preview_theme'] ) : '';
 
 		return $sanitized_input;
 	}
@@ -98,18 +327,59 @@ class Settings {
 	 * @return array
 	 */
 	public function get_settings() {
-		$default_settings = array(
+		$default_legacy_settings = array(
 			'enable_preview_banner' => 'yes',
 			'default_preview_theme' => '',
 			'preview_query_param'   => STS_DEFAULT_QUERY_PARAM,
 		);
 
+		$default_settings = array(
+			'post_types' => array(),
+			'taxonomies' => array(),
+			'advanced'   => array(
+				'preview_enabled' => true,
+				'debug_enabled'   => false,
+			),
+		);
+
+		// Get stored settings.
 		$settings = get_option( 'sts_settings', array() );
-		return wp_parse_args( $settings, $default_settings );
+		$settings = wp_parse_args( $settings, $default_legacy_settings );
+
+		// Handle upgrade from old format to new format if needed.
+		if ( ! isset( $settings['post_types'] ) ) {
+			// Add default post types and taxonomies settings.
+			$post_types = get_post_types( array( 'public' => true ), 'objects' );
+			foreach ( $post_types as $post_type ) {
+				if ( 'attachment' === $post_type->name ) {
+					continue;
+				}
+				$default_settings['post_types'][ $post_type->name ] = array(
+					'enabled' => false,
+					'theme'   => 'use_active',
+				);
+			}
+
+			$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+			foreach ( $taxonomies as $taxonomy ) {
+				$default_settings['taxonomies'][ $taxonomy->name ] = array(
+					'enabled' => false,
+					'theme'   => 'use_active',
+				);
+			}
+
+			// Convert legacy settings to new format.
+			$default_settings['advanced']['preview_enabled'] = 'yes' === $settings['enable_preview_banner'];
+			
+			// Merge old and new settings.
+			$settings = array_merge( $settings, $default_settings );
+		}
+
+		return $settings;
 	}
 
 	/**
-	 * Save settings via AJAX.
+	 * Save settings via AJAX (legacy method).
 	 *
 	 * @since 1.0.0
 	 * @return void
@@ -117,12 +387,12 @@ class Settings {
 	public function ajax_save_settings() {
 		// Check nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ets-settings-nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'easy-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
 		}
 
 		// Check permissions.
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to update settings.', 'easy-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to update settings.', 'smart-theme-switcher' ) ) );
 		}
 
 		// Get settings from request.
@@ -142,7 +412,7 @@ class Settings {
 	}
 
 	/**
-	 * Get settings via AJAX.
+	 * Get settings via AJAX (legacy method).
 	 *
 	 * @since 1.0.0
 	 * @return void
@@ -150,12 +420,12 @@ class Settings {
 	public function ajax_get_settings() {
 		// Check nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ets-settings-nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'easy-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
 		}
 
 		// Check permissions.
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to view settings.', 'easy-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to view settings.', 'smart-theme-switcher' ) ) );
 		}
 
 		// Get settings.

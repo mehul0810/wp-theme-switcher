@@ -4,132 +4,315 @@
  * @package SmartThemeSwitcher
  */
 
-(function(wp) {
+(function (wp) {
     const { __ } = wp.i18n;
     const { render, useState, useEffect } = wp.element;
     const { 
-        Panel, 
-        PanelBody, 
-        PanelRow, 
-        SelectControl, 
-        TextControl, 
-        ToggleControl, 
-        Button, 
-        Spinner, 
-        Notice, 
-        Card, 
-        CardHeader, 
-        CardBody, 
-        CardFooter 
+        Button,
+        Card,
+        CardBody,
+        CardFooter,
+        CardHeader,
+        ExternalLink,
+        Flex,
+        FlexItem,
+        FlexBlock,
+        Panel,
+        PanelBody,
+        PanelRow,
+        Placeholder,
+        SelectControl,
+        Spinner,
+        TabPanel,
+        TextControl,
+        ToggleControl,
     } = wp.components;
+    const { apiFetch } = wp.apiFetch;
 
     /**
-     * Settings App Component
+     * Header Component
+     */
+    const Header = () => {
+        return (
+            <div className="sts-settings-header">
+                <div className="sts-settings-header-left">
+                    <div className="sts-plugin-name">{stsSettings.strings.pluginName}</div>
+                    <div className="sts-page-title">{stsSettings.strings.settingsTitle}</div>
+                </div>
+                <div className="sts-settings-header-right">
+                    <ExternalLink href={stsSettings.docUrl} className="sts-doc-link">
+                        {stsSettings.strings.viewDocs}
+                    </ExternalLink>
+                    <span className="sts-version-badge">v{stsSettings.version}</span>
+                </div>
+            </div>
+        );
+    };
+
+    /**
+     * Post Type Panel Component
+     */
+    const PostTypePanel = ({ postType, settings, onSettingChange }) => {
+        const postTypeSettings = settings.post_types[postType.name] || { enabled: false, theme: 'use_active' };
+        
+        return (
+            <Panel className="sts-post-type-panel">
+                <PanelBody 
+                    title={postType.label}
+                    initialOpen={postTypeSettings.enabled}
+                >
+                    <div className="sts-panel-header">
+                        <div className="sts-panel-header-right">
+                            <div className="sts-toggle-dropdown-group">
+                                <ToggleControl
+                                    label={stsSettings.strings.enableForPostType}
+                                    checked={postTypeSettings.enabled}
+                                    onChange={(enabled) => {
+                                        onSettingChange('post_types', {
+                                            ...settings.post_types,
+                                            [postType.name]: {
+                                                ...postTypeSettings,
+                                                enabled
+                                            }
+                                        });
+                                    }}
+                                />
+                                
+                                <SelectControl
+                                    label={stsSettings.strings.selectTheme}
+                                    value={postTypeSettings.theme}
+                                    options={[
+                                        { label: stsSettings.strings.useActiveTheme, value: 'use_active' },
+                                        ...Object.entries(settings.themes || {})
+                                            .filter(([key]) => key !== 'use_active')
+                                            .map(([value, label]) => ({
+                                                label,
+                                                value
+                                            }))
+                                    ]}
+                                    onChange={(theme) => {
+                                        onSettingChange('post_types', {
+                                            ...settings.post_types,
+                                            [postType.name]: {
+                                                ...postTypeSettings,
+                                                theme
+                                            }
+                                        });
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </PanelBody>
+            </Panel>
+        );
+    };
+
+    /**
+     * Taxonomy Panel Component
+     */
+    const TaxonomyPanel = ({ taxonomy, settings, onSettingChange }) => {
+        const taxonomySettings = settings.taxonomies[taxonomy.name] || { enabled: false, theme: 'use_active' };
+        
+        return (
+            <Panel className="sts-taxonomy-panel">
+                <PanelBody 
+                    title={taxonomy.label}
+                    initialOpen={taxonomySettings.enabled}
+                >
+                    <div className="sts-panel-header">
+                        <div className="sts-panel-header-right">
+                            <div className="sts-toggle-dropdown-group">
+                                <ToggleControl
+                                    label={stsSettings.strings.enableForTaxonomy}
+                                    checked={taxonomySettings.enabled}
+                                    onChange={(enabled) => {
+                                        onSettingChange('taxonomies', {
+                                            ...settings.taxonomies,
+                                            [taxonomy.name]: {
+                                                ...taxonomySettings,
+                                                enabled
+                                            }
+                                        });
+                                    }}
+                                />
+                                
+                                <SelectControl
+                                    label={stsSettings.strings.selectTheme}
+                                    value={taxonomySettings.theme}
+                                    options={[
+                                        { label: stsSettings.strings.useActiveTheme, value: 'use_active' },
+                                        ...Object.entries(settings.themes || {})
+                                            .filter(([key]) => key !== 'use_active')
+                                            .map(([value, label]) => ({
+                                                label,
+                                                value
+                                            }))
+                                    ]}
+                                    onChange={(theme) => {
+                                        onSettingChange('taxonomies', {
+                                            ...settings.taxonomies,
+                                            [taxonomy.name]: {
+                                                ...taxonomySettings,
+                                                theme
+                                            }
+                                        });
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </PanelBody>
+            </Panel>
+        );
+    };
+
+    /**
+     * General Tab Component
+     */
+    const GeneralTab = ({ settings, postTypes, taxonomies, onSettingChange }) => {
+        return (
+            <div className="sts-general-tab">
+                <h3>{__('Post Types', 'smart-theme-switcher')}</h3>
+                {Object.values(postTypes).map((postType) => (
+                    <PostTypePanel 
+                        key={postType.name}
+                        postType={postType}
+                        settings={settings}
+                        onSettingChange={onSettingChange}
+                    />
+                ))}
+                
+                <h3>{__('Taxonomies', 'smart-theme-switcher')}</h3>
+                {Object.values(taxonomies).map((taxonomy) => (
+                    <TaxonomyPanel
+                        key={taxonomy.name}
+                        taxonomy={taxonomy}
+                        settings={settings}
+                        onSettingChange={onSettingChange}
+                    />
+                ))}
+            </div>
+        );
+    };
+
+    /**
+     * Advanced Tab Component
+     */
+    const AdvancedTab = ({ settings, onSettingChange }) => {
+        const advancedSettings = settings.advanced || { preview_enabled: true, debug_enabled: false };
+        
+        return (
+            <div className="sts-advanced-tab">
+                <Card className="sts-advanced-panel">
+                    <CardBody>
+                        <h3>{__('Global Settings', 'smart-theme-switcher')}</h3>
+                        <PanelRow>
+                            <ToggleControl
+                                label={stsSettings.strings.enableThemePreview}
+                                checked={advancedSettings.preview_enabled}
+                                onChange={(preview_enabled) => {
+                                    onSettingChange('advanced', {
+                                        ...advancedSettings,
+                                        preview_enabled
+                                    });
+                                }}
+                            />
+                        </PanelRow>
+                        <PanelRow>
+                            <ToggleControl
+                                label={stsSettings.strings.enableDebugging}
+                                checked={advancedSettings.debug_enabled}
+                                onChange={(debug_enabled) => {
+                                    onSettingChange('advanced', {
+                                        ...advancedSettings,
+                                        debug_enabled
+                                    });
+                                }}
+                            />
+                        </PanelRow>
+                    </CardBody>
+                </Card>
+            </div>
+        );
+    };
+
+    /**
+     * Main Settings App Component
      */
     const SettingsApp = () => {
         // State variables
         const [settings, setSettings] = useState({
+            post_types: {},
+            taxonomies: {},
+            advanced: {
+                preview_enabled: true,
+                debug_enabled: false
+            },
+            themes: {},
+            // Legacy settings for backward compatibility
             enable_preview_banner: 'yes',
             default_preview_theme: '',
-            preview_query_param: 'ets_theme'
+            preview_query_param: 'sts_theme'
         });
-        const [themes, setThemes] = useState([]);
+        
+        const [postTypes, setPostTypes] = useState({});
+        const [taxonomies, setTaxonomies] = useState({});
         const [isLoading, setIsLoading] = useState(true);
         const [isSaving, setIsSaving] = useState(false);
         const [notice, setNotice] = useState({ status: '', message: '' });
+        const [activeTab, setActiveTab] = useState('general');
 
-        // Load settings on component mount
+        // Load settings and data on component mount
         useEffect(() => {
-            loadSettings();
+            Promise.all([
+                // Load settings
+                fetch(`${stsSettings.restUrl}/settings`, {
+                    headers: {
+                        'X-WP-Nonce': stsSettings.nonce
+                    }
+                }).then(response => response.json()),
+                
+                // Load post types
+                fetch(`${stsSettings.restUrl}/post-types`, {
+                    headers: {
+                        'X-WP-Nonce': stsSettings.nonce
+                    }
+                }).then(response => response.json()),
+                
+                // Load taxonomies
+                fetch(`${stsSettings.restUrl}/taxonomies`, {
+                    headers: {
+                        'X-WP-Nonce': stsSettings.nonce
+                    }
+                }).then(response => response.json()),
+                
+                // Load themes
+                fetch(`${stsSettings.restUrl}/themes`, {
+                    headers: {
+                        'X-WP-Nonce': stsSettings.nonce
+                    }
+                }).then(response => response.json())
+            ])
+            .then(([settingsData, postTypesData, taxonomiesData, themesData]) => {
+                // Update state with fetched data
+                setSettings({
+                    ...settingsData,
+                    themes: themesData
+                });
+                setPostTypes(postTypesData);
+                setTaxonomies(taxonomiesData);
+                setIsLoading(false);
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                setNotice({
+                    status: 'error',
+                    message: stsSettings.strings.error
+                });
+                setIsLoading(false);
+            });
         }, []);
-
-        /**
-         * Load settings from the server
-         */
-        const loadSettings = () => {
-            setIsLoading(true);
-
-            const data = new FormData();
-            data.append('action', 'ets_get_settings');
-            data.append('nonce', etsSettings.nonce);
-
-            fetch(etsSettings.ajaxUrl, {
-                method: 'POST',
-                body: data,
-                credentials: 'same-origin'
-            })
-            .then(response => response.json())
-            .then(response => {
-                if (response.success) {
-                    setSettings(response.data.settings);
-                    
-                    // Convert themes object to array format for SelectControl
-                    const themeOptions = Object.keys(response.data.themes).map(slug => ({
-                        value: slug,
-                        label: response.data.themes[slug]
-                    }));
-                    
-                    setThemes(themeOptions);
-                } else {
-                    setNotice({
-                        status: 'error',
-                        message: response.data.message || etsSettings.strings.error
-                    });
-                }
-                setIsLoading(false);
-            })
-            .catch(error => {
-                console.error('Error loading settings:', error);
-                setNotice({
-                    status: 'error',
-                    message: etsSettings.strings.error
-                });
-                setIsLoading(false);
-            });
-        };
-
-        /**
-         * Save settings to the server
-         */
-        const saveSettings = () => {
-            setIsSaving(true);
-            setNotice({ status: '', message: '' });
-
-            const data = new FormData();
-            data.append('action', 'ets_save_settings');
-            data.append('nonce', etsSettings.nonce);
-            data.append('settings', JSON.stringify(settings));
-
-            fetch(etsSettings.ajaxUrl, {
-                method: 'POST',
-                body: data,
-                credentials: 'same-origin'
-            })
-            .then(response => response.json())
-            .then(response => {
-                if (response.success) {
-                    setSettings(response.data.settings);
-                    setNotice({
-                        status: 'success',
-                        message: response.data.message || etsSettings.strings.saved
-                    });
-                } else {
-                    setNotice({
-                        status: 'error',
-                        message: response.data.message || etsSettings.strings.error
-                    });
-                }
-                setIsSaving(false);
-            })
-            .catch(error => {
-                console.error('Error saving settings:', error);
-                setNotice({
-                    status: 'error',
-                    message: etsSettings.strings.error
-                });
-                setIsSaving(false);
-            });
-        };
 
         /**
          * Handle setting changes
@@ -144,92 +327,132 @@
             });
         };
 
+        /**
+         * Save settings
+         */
+        const saveSettings = () => {
+            setIsSaving(true);
+            setNotice({ status: '', message: '' });
+
+            fetch(`${stsSettings.restUrl}/settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': stsSettings.nonce
+                },
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(response => {
+                if (response.success) {
+                    setNotice({
+                        status: 'success',
+                        message: response.message || stsSettings.strings.success
+                    });
+                } else {
+                    setNotice({
+                        status: 'error',
+                        message: response.message || stsSettings.strings.error
+                    });
+                }
+                setIsSaving(false);
+            })
+            .catch(error => {
+                console.error('Error saving settings:', error);
+                setNotice({
+                    status: 'error',
+                    message: stsSettings.strings.error
+                });
+                setIsSaving(false);
+            });
+        };
+
         // If still loading, show spinner
         if (isLoading) {
             return (
-                <div className="ets-settings-loading">
-                    <Spinner />
-                    <p>{etsSettings.strings.loading}</p>
+                <div className="sts-settings-app">
+                    <Header />
+                    <div className="sts-settings-content">
+                        <Placeholder className="sts-settings-loading">
+                            <Spinner />
+                            <p>{stsSettings.strings.loading}</p>
+                        </Placeholder>
+                    </div>
                 </div>
             );
         }
 
         return (
-            <div className="ets-settings-wrapper">
-                {notice.status && (
-                    <Notice 
-                        status={notice.status} 
-                        isDismissible={true}
-                        onRemove={() => setNotice({ status: '', message: '' })}
-                    >
-                        {notice.message}
-                    </Notice>
-                )}
-
-                <Card>
-                    <CardHeader>
-                        <h2>{etsSettings.strings.settingsTitle}</h2>
-                        <p>{etsSettings.strings.settingsDescription}</p>
-                    </CardHeader>
+            <div className="sts-settings-app">
+                <Header />
+                
+                <div className="sts-settings-content">
+                    {notice.status && (
+                        <div className={`notice notice-${notice.status} is-dismissible`}>
+                            <p>{notice.message}</p>
+                        </div>
+                    )}
                     
-                    <CardBody>
-                        <Panel>
-                            <PanelBody 
-                                title={__('General Settings', 'easy-theme-switcher')}
-                                initialOpen={true}
-                            >
-                                <PanelRow>
-                                    <ToggleControl
-                                        label={etsSettings.strings.enableBanner}
-                                        help={etsSettings.strings.enableBannerHelp}
-                                        checked={settings.enable_preview_banner === 'yes'}
-                                        onChange={(value) => handleSettingChange('enable_preview_banner', value ? 'yes' : 'no')}
-                                    />
-                                </PanelRow>
+                    <div className="sts-tabs-container">
+                        <TabPanel
+                            className="sts-settings-tabs"
+                            activeClass="is-active"
+                            onSelect={(tabName) => setActiveTab(tabName)}
+                            tabs={[
+                                {
+                                    name: 'general',
+                                    title: stsSettings.strings.generalTab,
+                                    className: 'sts-tab-general',
+                                },
+                                {
+                                    name: 'advanced',
+                                    title: stsSettings.strings.advancedTab,
+                                    className: 'sts-tab-advanced',
+                                }
+                            ]}
+                        >
+                            {(tab) => {
+                                if (tab.name === 'general') {
+                                    return (
+                                        <GeneralTab 
+                                            settings={settings}
+                                            postTypes={postTypes}
+                                            taxonomies={taxonomies}
+                                            onSettingChange={handleSettingChange}
+                                        />
+                                    );
+                                }
                                 
-                                <PanelRow>
-                                    <SelectControl
-                                        label={etsSettings.strings.defaultTheme}
-                                        help={etsSettings.strings.defaultThemeHelp}
-                                        value={settings.default_preview_theme}
-                                        options={[
-                                            { value: '', label: etsSettings.strings.selectTheme },
-                                            ...themes
-                                        ]}
-                                        onChange={(value) => handleSettingChange('default_preview_theme', value)}
-                                    />
-                                </PanelRow>
-                                
-                                <PanelRow>
-                                    <TextControl
-                                        label={etsSettings.strings.queryParam}
-                                        help={etsSettings.strings.queryParamHelp}
-                                        value={settings.preview_query_param}
-                                        onChange={(value) => handleSettingChange('preview_query_param', value)}
-                                    />
-                                </PanelRow>
-                            </PanelBody>
-                        </Panel>
-                    </CardBody>
+                                if (tab.name === 'advanced') {
+                                    return (
+                                        <AdvancedTab 
+                                            settings={settings}
+                                            onSettingChange={handleSettingChange}
+                                        />
+                                    );
+                                }
+                            }}
+                        </TabPanel>
+                    </div>
                     
-                    <CardFooter>
+                    <div className="sts-settings-footer">
                         <Button 
                             isPrimary 
                             onClick={saveSettings}
                             isBusy={isSaving}
                             disabled={isSaving}
                         >
-                            {isSaving ? etsSettings.strings.saving : etsSettings.strings.save}
+                            {isSaving ? stsSettings.strings.saving : stsSettings.strings.save}
                         </Button>
-                    </CardFooter>
-                </Card>
+                    </div>
+                </div>
             </div>
         );
     };
 
     // Render the app
     document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('ets-settings-app');
+        const container = document.getElementById('sts-settings-app');
         if (container) {
             render(<SettingsApp />, container);
         }
