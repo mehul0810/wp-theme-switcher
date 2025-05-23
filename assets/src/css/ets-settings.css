@@ -137,13 +137,6 @@
     margin-bottom: 16px;
 }
 
-.sts-toggle-dropdown-group {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
 /* Advanced Tab */
 .sts-advanced-panel {
     background: #fff;
