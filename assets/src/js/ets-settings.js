@@ -258,7 +258,15 @@ import '../css/ets-settings.css';
         const [isLoading, setIsLoading] = useState(true);
         const [isSaving, setIsSaving] = useState(false);
         const [notice, setNotice] = useState({ status: '', message: '' });
-        const [activeTab, setActiveTab] = useState('general');
+        const [activeTab, setActiveTab] = useState(() => {
+            // Check URL for tab param on load (case-insensitive)
+            const params = new URLSearchParams(window.location.search);
+            const tabParam = params.get('tab');
+            if (tabParam && (tabParam.toLowerCase() === 'advanced' || tabParam.toLowerCase() === 'general')) {
+                return tabParam.toLowerCase();
+            }
+            return 'general';
+        });
 
         // Load settings and data on component mount
         useEffect(() => {
@@ -310,6 +318,16 @@ import '../css/ets-settings.css';
                 setIsLoading(false);
             });
         }, []);
+
+        useEffect(() => {
+            // Update URL when activeTab changes
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('tab') !== activeTab) {
+                params.set('tab', activeTab);
+                const newUrl = `${window.location.pathname}?${params.toString()}`;
+                window.history.replaceState({}, '', newUrl);
+            }
+        }, [activeTab]);
 
         /**
          * Handle setting changes
@@ -394,6 +412,7 @@ import '../css/ets-settings.css';
                         <TabPanel
                             className="sts-settings-tabs"
                             activeClass="is-active"
+                            initialTabName={activeTab}
                             onSelect={(tabName) => setActiveTab(tabName)}
                             tabs={[
                                 {
