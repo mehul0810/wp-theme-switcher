@@ -240,7 +240,7 @@ class ThemeSwitcher {
 		// Enqueue preview JS.
 		wp_enqueue_script(
 			'sts-preview',
-			STS_PLUGIN_URL . 'assets/dist/sts-preview.js',
+			STS_PLUGIN_URL . 'assets/dist/preview.js',
 			array( 'jquery' ),
 			STS_PLUGIN_VERSION,
 			true
@@ -275,7 +275,7 @@ class ThemeSwitcher {
 		// Enqueue editor script.
 		wp_enqueue_script(
 			'sts-editor',
-			STS_PLUGIN_URL . 'assets/dist/sts-editor.js',
+			STS_PLUGIN_URL . 'assets/dist/individual.js',
 			array(
 				'wp-blocks',
 				'wp-element',
