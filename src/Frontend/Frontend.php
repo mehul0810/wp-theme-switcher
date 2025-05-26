@@ -43,7 +43,7 @@ class Frontend {
 	private function init_hooks() {
 		// Check if we're in preview mode and banner is enabled.
 		$theme_switcher = new ThemeSwitcher();
-		$settings = get_option( 'ets_settings', array() );
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
 		$preview_theme = $theme_switcher->get_preview_theme();
 		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
 

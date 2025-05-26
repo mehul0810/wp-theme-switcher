@@ -17,6 +17,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * ThemeSwitcher Class.
  *
  * Handles the core functionality of theme switching.
+ * 
+ * This class works with ThemeResolver to determine which theme to load
+ * based on a priority system:
+ * 1. Individual post setting (highest priority)
+ * 2. Post type or taxonomy setting (medium priority)
+ * 3. Global/default theme (lowest priority)
  *
  * @since 1.0.0
  */
@@ -100,7 +106,16 @@ class ThemeSwitcher {
 	 * @return bool
 	 */
 	public function can_user_preview() {
-		return is_user_logged_in() && current_user_can( 'edit_posts' );
+		/**
+		 * Filter whether the current user can preview themes.
+		 *
+		 * @since 1.0.0
+		 * @param bool $can_preview Whether the current user can preview themes.
+		 */
+		return apply_filters(
+			'smart_theme_switcher_can_user_preview',
+			is_user_logged_in() && current_user_can( 'edit_posts' )
+		);
 	}
 
 	/**

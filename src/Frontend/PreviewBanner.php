@@ -64,7 +64,7 @@ class PreviewBanner {
 		}
 
 		// Get settings.
-		$settings = get_option( 'ets_settings', array() );
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
 		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
 		
 		// Only enqueue if banner is enabled.
