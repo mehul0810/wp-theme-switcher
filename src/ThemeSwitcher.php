@@ -23,11 +23,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ThemeSwitcher {
 
 	/**
+	 * Theme resolver instance.
+	 *
+	 * @since 1.0.0
+	 * @var ThemeResolver
+	 */
+	private $theme_resolver;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 */
 	public function __construct() {
+		// Initialize theme resolver.
+		$this->theme_resolver = new ThemeResolver();
+		
 		// Initialize hooks.
 		$this->init_hooks();
 	}
@@ -60,56 +71,26 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Get preview theme name for current request, supporting per-post meta, per-post-type, and fallback to active theme.
-	 *
-	 * Priority:
-	 * 1. Theme set in individual post (post meta)
-	 * 2. Theme set per post type from settings (if enabled and not 'use_active')
-	 * 3. Active theme (no override)
+	 * Get preview theme name for current request.
+	 * 
+	 * Uses ThemeResolver to determine theme with proper priority:
+	 * 1. Preview parameter in URL (only for authorized users)
+	 * 2. Theme set in individual post (post meta)
+	 * 3. Theme set per post type or taxonomy from settings
+	 * 4. Active theme (no override)
 	 *
 	 * @since 1.0.0
 	 * @return string|bool Theme slug or false if no override.
 	 */
 	public function get_preview_theme() {
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
-		$query_param = isset( $settings['preview_query_param'] ) ? $settings['preview_query_param'] : STS_DEFAULT_QUERY_PARAM;
-
-		// 1. Check if preview parameter exists in URL (global preview mode)
-		if ( isset( $_GET[ $query_param ] ) && ! empty( $_GET[ $query_param ] ) ) {
-			return sanitize_text_field( $_GET[ $query_param ] );
+		// For authorized users, query parameter can override the theme
+		$preview_theme = null;
+		if ( $this->can_user_preview() ) {
+			$preview_theme = $this->theme_resolver->get_preview_theme_from_query();
 		}
-
-		// 2. Check for per-post theme assignment (only on singular post/page)
-		if ( is_singular() ) {
-			$post_id = get_queried_object_id();
-			if ( $post_id ) {
-				$meta_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
-				if ( ! empty( $meta_theme ) ) {
-					return $meta_theme;
-				}
-			}
-		}
-
-		// 3. Check for per-post-type theme assignment from settings (if enabled and not 'use_active')
-		if ( is_singular() ) {
-			global $post;
-			if ( $post && isset( $settings['post_types'] ) && is_array( $settings['post_types'] ) ) {
-				$post_type = get_post_type( $post );
-				if (
-					$post_type &&
-					isset( $settings['post_types'][ $post_type ] ) &&
-					! empty( $settings['post_types'][ $post_type ]['enabled'] ) &&
-					isset( $settings['post_types'][ $post_type ]['theme'] ) &&
-					$settings['post_types'][ $post_type ]['theme'] !== 'use_active' &&
-					! empty( $settings['post_types'][ $post_type ]['theme'] )
-				) {
-					return sanitize_text_field( $settings['post_types'][ $post_type ]['theme'] );
-				}
-			}
-		}
-
-		// 4. Fallback: use active theme (no override)
-		return false;
+		
+		// Use theme resolver to determine the appropriate theme based on priority
+		return $this->theme_resolver->resolve_theme( $preview_theme );
 	}
 
 	/**
@@ -346,8 +327,7 @@ class ThemeSwitcher {
 	 * @return string
 	 */
 	public function get_query_param_name() {
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
-		return isset( $settings['preview_query_param'] ) ? $settings['preview_query_param'] : STS_DEFAULT_QUERY_PARAM;
+		return $this->theme_resolver->get_query_param_name();
 	}
 
 	/**
