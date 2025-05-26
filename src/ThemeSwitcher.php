@@ -239,7 +239,7 @@ class ThemeSwitcher {
 		// Enqueue editor script.
 		wp_enqueue_script(
 			'ets-editor',
-			STS_PLUGIN_URL . 'assets/dist/js/ets-editor.js',
+			STS_PLUGIN_URL . 'assets/dist/ets-editor.js',
 			array(
 				'wp-blocks',
 				'wp-element',
