@@ -329,14 +329,14 @@ class Settings {
 
 		// Advanced settings.
 		if ( isset( $input['advanced'] ) && is_array( $input['advanced'] ) ) {
-			$sanitized_input['advanced'] = array(
-				'preview_enabled' => isset( $input['advanced']['preview_enabled'] ) 
-					? (bool) $input['advanced']['preview_enabled'] 
-					: true,
-				'debug_enabled'   => isset( $input['advanced']['debug_enabled'] ) 
-					? (bool) $input['advanced']['debug_enabled'] 
-					: false,
-			);
+			$sanitized_input['advanced'] = array();
+			foreach ( $input['advanced'] as $key => $value ) {
+				if ( $key === 'enable_preview' ) {
+					$sanitized_input['enable_preview'] = $value === 'yes' ? 'yes' : 'no';
+				} else {
+					$sanitized_input['advanced'][ sanitize_key( $key ) ] = sanitize_text_field( $value );
+				}
+			}
 		} else {
 			$sanitized_input['advanced'] = array(
 				'preview_enabled' => true,

@@ -41,13 +41,13 @@ class Frontend {
 	 * @return void
 	 */
 	private function init_hooks() {
-		// Check if we're in preview mode and banner is enabled.
 		$theme_switcher = new ThemeSwitcher();
 		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
 		$preview_theme = $theme_switcher->get_preview_theme();
 		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
 
-		if ( $theme_switcher->can_user_preview() && $preview_theme && $enable_banner ) {
+		if ( $preview_enabled && $theme_switcher->can_user_preview() && $preview_theme && $enable_banner ) {
 			// Add preview banner.
 			add_action( 'wp_body_open', array( $this, 'add_preview_banner' ) );
 			

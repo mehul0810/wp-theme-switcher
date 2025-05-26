@@ -57,9 +57,10 @@ class PreviewBanner {
 	public function enqueue_scripts() {
 		// Get theme switcher instance.
 		$theme_switcher = new ThemeSwitcher();
-		
-		// Only enqueue for users who can preview and are in preview mode.
-		if ( ! $theme_switcher->can_user_preview() || ! $theme_switcher->get_preview_theme() ) {
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
+		// Only enqueue for users who can preview, preview mode enabled, and are in preview mode.
+		if ( ! $preview_enabled || ! $theme_switcher->can_user_preview() || ! $theme_switcher->get_preview_theme() ) {
 			return;
 		}
 

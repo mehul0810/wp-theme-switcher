@@ -77,8 +77,19 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Get preview theme name for current request.
-	 * 
+	 * Get the theme to use for the current request (persistent for all users).
+	 *
+	 * @since 1.0.0
+	 * @return string|bool Theme slug or false if no override.
+	 */
+	public function get_assigned_theme() {
+		// Use theme resolver to determine the appropriate theme based on priority (post meta, post type/tax, fallback)
+		return $this->theme_resolver->resolve_theme();
+	}
+
+	/**
+	 * Get preview theme name for current request (admin preview mode).
+	 *
 	 * Uses ThemeResolver to determine theme with proper priority:
 	 * 1. Preview parameter in URL (only for authorized users)
 	 * 2. Theme set in individual post (post meta)
@@ -89,14 +100,17 @@ class ThemeSwitcher {
 	 * @return string|bool Theme slug or false if no override.
 	 */
 	public function get_preview_theme() {
-		// For authorized users, query parameter can override the theme
-		$preview_theme = null;
-		if ( $this->can_user_preview() ) {
-			$preview_theme = $this->theme_resolver->get_preview_theme_from_query();
+		// Only for preview mode (admins/editors, preview enabled, and query param present)
+		$settings = get_option('smart_theme_switcher_settings', array());
+		$preview_enabled = isset($settings['enable_preview']) && $settings['enable_preview'] === 'yes';
+		if ( ! $preview_enabled || ! $this->can_user_preview() ) {
+			return false;
 		}
-		
-		// Use theme resolver to determine the appropriate theme based on priority
-		return $this->theme_resolver->resolve_theme( $preview_theme );
+		$preview_theme = $this->theme_resolver->get_preview_theme_from_query();
+		if ( ! empty($preview_theme) ) {
+			return $preview_theme;
+		}
+		return false;
 	}
 
 	/**
@@ -126,17 +140,22 @@ class ThemeSwitcher {
 	 * @return string New theme template.
 	 */
 	public function preview_theme_template( $template ) {
-		// Only proceed if user can preview and we're in preview mode.
-		if ( ! $this->can_user_preview() || ! $this->get_preview_theme() ) {
-			return $template;
+		// Preview mode (admin-only, query param)
+		$preview_theme = $this->get_preview_theme();
+		if ( $preview_theme ) {
+			$theme = wp_get_theme( $preview_theme );
+			if ( $theme->exists() ) {
+				return $theme->get_template();
+			}
 		}
-
-		$theme = wp_get_theme( $this->get_preview_theme() );
-		
-		if ( $theme->exists() ) {
-			return $theme->get_template();
+		// Persistent assignment (all users)
+		$assigned_theme = $this->get_assigned_theme();
+		if ( $assigned_theme ) {
+			$theme = wp_get_theme( $assigned_theme );
+			if ( $theme->exists() ) {
+				return $theme->get_template();
+			}
 		}
-		
 		return $template;
 	}
 
@@ -148,55 +167,72 @@ class ThemeSwitcher {
 	 * @return string New theme stylesheet.
 	 */
 	public function preview_theme_stylesheet( $stylesheet ) {
-		// Only proceed if user can preview and we're in preview mode.
-		if ( ! $this->can_user_preview() || ! $this->get_preview_theme() ) {
-			return $stylesheet;
+		$preview_theme = $this->get_preview_theme();
+		if ( $preview_theme ) {
+			$theme = wp_get_theme( $preview_theme );
+			if ( $theme->exists() ) {
+				return $theme->get_stylesheet();
+			}
 		}
-
-		$theme = wp_get_theme( $this->get_preview_theme() );
-		
-		if ( $theme->exists() ) {
-			return $theme->get_stylesheet();
+		$assigned_theme = $this->get_assigned_theme();
+		if ( $assigned_theme ) {
+			$theme = wp_get_theme( $assigned_theme );
+			if ( $theme->exists() ) {
+				return $theme->get_stylesheet();
+			}
 		}
-		
 		return $stylesheet;
 	}
 
 	/**
-	 * Filter template include for theme preview.
+	 * Filter template include for theme preview and persistent assignment.
 	 *
 	 * @since 1.0.0
 	 * @param string $template The path of the template to include.
 	 * @return string The path of the template to include.
 	 */
 	public function preview_theme_template_include( $template ) {
-		// Only proceed if user can preview and we're in preview mode.
-		if ( ! $this->can_user_preview() || ! $this->get_preview_theme() ) {
+		// 1. Preview mode (admin-only, query param, preview enabled)
+		$preview_theme = $this->get_preview_theme();
+		if ( $preview_theme ) {
+			$theme = wp_get_theme( $preview_theme );
+			if ( $theme->exists() ) {
+				$template_file = basename( $template );
+				$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
+				if ( file_exists( $theme_template ) ) {
+					return $theme_template;
+				}
+				// Fallback to theme index.php if template file missing
+				$theme_index = $theme->get_stylesheet_directory() . '/index.php';
+				if ( file_exists( $theme_index ) ) {
+					return $theme_index;
+				}
+			}
+			// If preview theme is invalid, fallback to default template
 			return $template;
 		}
 
-		// Verify the theme exists.
-		$theme = wp_get_theme( $this->get_preview_theme() );
-		if ( ! $theme->exists() ) {
+		// 2. Persistent assignment (all users, per-post, post type, taxonomy)
+		$assigned_theme = $this->get_assigned_theme();
+		if ( $assigned_theme ) {
+			$theme = wp_get_theme( $assigned_theme );
+			if ( $theme->exists() ) {
+				$template_file = basename( $template );
+				$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
+				if ( file_exists( $theme_template ) ) {
+					return $theme_template;
+				}
+				// Fallback to theme index.php if template file missing
+				$theme_index = $theme->get_stylesheet_directory() . '/index.php';
+				if ( file_exists( $theme_index ) ) {
+					return $theme_index;
+				}
+			}
+			// If assigned theme is invalid, fallback to default template
 			return $template;
 		}
 
-		// Get the template filename.
-		$template_file = basename( $template );
-		$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
-
-		// If the template exists in the selected theme, use it.
-		if ( file_exists( $theme_template ) ) {
-			return $theme_template;
-		}
-
-		// Fallback: Use the selected theme's index.php if it exists.
-		$theme_index = $theme->get_stylesheet_directory() . '/index.php';
-		if ( file_exists( $theme_index ) ) {
-			return $theme_index;
-		}
-
-		// Final fallback: Use the original template from the active theme (do NOT return a non-existent file).
+		// 3. Default: use active theme
 		return $template;
 	}
 
