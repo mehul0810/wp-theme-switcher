@@ -45,7 +45,7 @@ class PreviewBanner {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		
 		// AJAX handler for switching themes.
-		add_action( 'wp_ajax_ets_switch_theme', array( $this, 'ajax_switch_theme' ) );
+		add_action( 'wp_ajax_sts_switch_theme', array( $this, 'ajax_switch_theme' ) );
 	}
 
 	/**
@@ -74,16 +74,16 @@ class PreviewBanner {
 
 		// Enqueue banner CSS.
 		wp_enqueue_style(
-			'ets-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/ets-preview-banner.css',
+			'sts-preview-banner',
+			STS_PLUGIN_URL . 'assets/dist/preview-banner.css',
 			array(),
 			STS_PLUGIN_VERSION
 		);
 
 		// Enqueue banner JS.
 		wp_enqueue_script(
-			'ets-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/ets-preview-banner.js',
+			'sts-preview-banner',
+			STS_PLUGIN_URL . 'assets/dist/preview-banner.js',
 			array( 'jquery' ),
 			STS_PLUGIN_VERSION,
 			true
@@ -91,11 +91,11 @@ class PreviewBanner {
 
 		// Localize script.
 		wp_localize_script(
-			'ets-preview-banner',
-			'etsPreviewBanner',
+			'sts-preview-banner',
+			'PreviewBanner',
 			array(
 				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'nonce'         => wp_create_nonce( 'ets-preview-banner-nonce' ),
+				'nonce'         => wp_create_nonce( 'sts-preview-banner-nonce' ),
 				'currentUrl'    => esc_url( remove_query_arg( $theme_switcher->get_query_param_name() ) ),
 				'queryParam'    => $theme_switcher->get_query_param_name(),
 				'currentTheme'  => $theme_switcher->get_preview_theme(),
@@ -111,7 +111,7 @@ class PreviewBanner {
 	 */
 	public function ajax_switch_theme() {
 		// Check nonce.
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ets-preview-banner-nonce' ) ) {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'sts-preview-banner-nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
 		}
 

@@ -1,4 +1,4 @@
-import '../css/ets-preview.css';
+import '../css/preview.css';
 
 /**
  * Frontend Preview Functionality
@@ -10,7 +10,7 @@ import '../css/ets-preview.css';
     'use strict';
 
     // Check if we're in preview mode
-    if (!etsPreview || !etsPreview.isPreviewMode) {
+    if (!Preview || !Preview.isPreviewMode) {
         return;
     }
 
@@ -19,7 +19,7 @@ import '../css/ets-preview.css';
      */
     function initPreview() {
         // Add event listener to theme selector in banner
-        $('#ets-theme-select').on('change', function() {
+        $('#sts-theme-select').on('change', function() {
             const selectedTheme = $(this).val();
             
             if (!selectedTheme) {
@@ -28,7 +28,7 @@ import '../css/ets-preview.css';
             
             // Redirect to the current page with the selected theme
             const currentUrl = window.location.href;
-            const newUrl = updateQueryParameter(currentUrl, etsPreview.queryParam, selectedTheme);
+            const newUrl = updateQueryParameter(currentUrl, Preview.queryParam, selectedTheme);
             window.location.href = newUrl;
         });
     }

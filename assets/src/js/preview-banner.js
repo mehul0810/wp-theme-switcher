@@ -1,4 +1,4 @@
-import '../css/ets-preview-banner.css';
+import '../css/preview-banner.css';
 
 /**
  * Preview Banner Functionality
@@ -14,7 +14,7 @@ import '../css/ets-preview-banner.css';
      */
     function initPreviewBanner() {
         // Add event listener to theme selector in banner
-        $('#ets-theme-select').on('change', function() {
+        $('#sts-theme-select').on('change', function() {
             const selectedTheme = $(this).val();
             
             if (!selectedTheme) {
@@ -22,14 +22,14 @@ import '../css/ets-preview-banner.css';
             }
 
             // AJAX call to switch theme or direct redirect
-            if (selectedTheme === etsPreviewBanner.currentTheme) {
+            if (selectedTheme === PreviewBanner.currentTheme) {
                 return;
             }
 
             // Update the URL and reload
             const newUrl = addOrUpdateUrlParam(
-                etsPreviewBanner.currentUrl,
-                etsPreviewBanner.queryParam,
+                PreviewBanner.currentUrl,
+                PreviewBanner.queryParam,
                 selectedTheme
             );
             
@@ -37,24 +37,24 @@ import '../css/ets-preview-banner.css';
         });
 
         // Make the banner draggable
-        if ($.fn.draggable && $('#ets-preview-banner').length) {
-            $('#ets-preview-banner').draggable({
+        if ($.fn.draggable && $('#sts-preview-banner').length) {
+            $('#sts-preview-banner').draggable({
                 axis: 'y',
                 containment: 'window',
-                handle: '.ets-preview-banner-inner'
+                handle: '.sts-preview-banner-inner'
             });
         }
 
         // Add a close button for the compatibility notice
-        if ($('#ets-compatibility-notice').length) {
-            const $noticeDiv = $('#ets-compatibility-notice');
+        if ($('#sts-compatibility-notice').length) {
+            const $noticeDiv = $('#sts-compatibility-notice');
             const $closeButton = $('<button>', {
-                class: 'ets-notice-close',
+                class: 'sts-notice-close',
                 html: '&times;',
                 title: 'Dismiss notice'
             });
 
-            $noticeDiv.find('.ets-notice-inner').append($closeButton);
+            $noticeDiv.find('.sts-notice-inner').append($closeButton);
 
             $closeButton.on('click', function() {
                 $noticeDiv.fadeOut(300, function() {

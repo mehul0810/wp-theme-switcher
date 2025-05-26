@@ -4,7 +4,7 @@
  * @package SmartThemeSwitcher
  */
 
-import '../css/ets-settings.css';
+import '../css/settings.css';
 
 (function (wp) {
     const { __ } = wp.i18n;

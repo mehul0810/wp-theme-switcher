@@ -46,8 +46,8 @@ class Settings {
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		
 		// Legacy AJAX handlers (for backward compatibility).
-		add_action( 'wp_ajax_ets_save_settings', array( $this, 'ajax_save_settings' ) );
-		add_action( 'wp_ajax_ets_get_settings', array( $this, 'ajax_get_settings' ) );
+		add_action( 'wp_ajax_sts_save_settings', array( $this, 'ajax_save_settings' ) );
+		add_action( 'wp_ajax_sts_get_settings', array( $this, 'ajax_get_settings' ) );
 	}
 
 	/**
@@ -372,7 +372,7 @@ class Settings {
 	 */
 	public function ajax_save_settings() {
 		// Check nonce.
-		$this->check_nonce( 'ets-settings-nonce' );
+		$this->check_nonce( 'sts-settings-nonce' );
 
 		// Check permissions.
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -403,7 +403,7 @@ class Settings {
 	 */
 	public function ajax_get_settings() {
 		// Check nonce.
-		$this->check_nonce( 'ets-settings-nonce' );
+		$this->check_nonce( 'sts-settings-nonce' );
 
 		// Check permissions.
 		if ( ! current_user_can( 'manage_options' ) ) {

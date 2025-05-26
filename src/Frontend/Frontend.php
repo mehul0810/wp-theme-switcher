@@ -82,17 +82,17 @@ class Frontend {
 		
 		// Output banner.
 		?>
-		<div id="ets-preview-banner" class="ets-preview-banner">
-			<div class="ets-preview-banner-inner">
-				<div class="ets-preview-info">
-					<span class="ets-preview-label"><?php esc_html_e( 'Preview Mode:', 'smart-theme-switcher' ); ?></span>
-					<span class="ets-preview-theme"><?php echo esc_html( $preview_theme->get( 'Name' ) ); ?></span>
+		<div id="sts-preview-banner" class="sts-preview-banner">
+			<div class="sts-preview-banner-inner">
+				<div class="sts-preview-info">
+					<span class="sts-preview-label"><?php esc_html_e( 'Preview Mode:', 'smart-theme-switcher' ); ?></span>
+					<span class="sts-preview-theme"><?php echo esc_html( $preview_theme->get( 'Name' ) ); ?></span>
 				</div>
 				
-				<div class="ets-preview-actions">
-					<div class="ets-theme-select-wrapper">
-						<label for="ets-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'smart-theme-switcher' ); ?></label>
-						<select id="ets-theme-select" class="ets-theme-select">
+				<div class="sts-preview-actions">
+					<div class="sts-theme-select-wrapper">
+						<label for="sts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'smart-theme-switcher' ); ?></label>
+						<select id="sts-theme-select" class="sts-theme-select">
 							<option value=""><?php esc_html_e( 'Switch Theme...', 'smart-theme-switcher' ); ?></option>
 							<?php foreach ( $themes as $slug => $name ) : ?>
 								<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $slug, $preview_theme_slug ); ?>>
@@ -102,7 +102,7 @@ class Frontend {
 						</select>
 					</div>
 					
-					<a href="<?php echo esc_url( $current_url ); ?>" class="ets-exit-preview-button button button-secondary">
+					<a href="<?php echo esc_url( $current_url ); ?>" class="sts-exit-preview-button button button-secondary">
 						<?php esc_html_e( 'Exit Preview', 'smart-theme-switcher' ); ?>
 					</a>
 				</div>
@@ -142,8 +142,8 @@ class Frontend {
 			
 			// Output notice.
 			?>
-			<div id="ets-compatibility-notice" class="ets-compatibility-notice">
-				<div class="ets-notice-inner">
+			<div id="sts-compatibility-notice" class="sts-compatibility-notice">
+				<div class="sts-notice-inner">
 					<span class="dashicons dashicons-info"></span>
 					<p><?php echo esc_html( $message ); ?></p>
 				</div>

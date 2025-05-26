@@ -4,14 +4,14 @@
  * @package SmartThemeSwitcher
  */
 
-import '../css/ets-editor.css';
+import '../css/editor.css';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { SelectControl } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 
-(function( wp ) {
+(function (wp) {
 	const { __ } = wp.i18n;
 
 	/**
@@ -37,15 +37,15 @@ import { useState, useEffect } from '@wordpress/element';
 		};
 
 		return (
-				<SelectControl
-					label={__('Select a theme', 'smart-theme-switcher')}
-					value={selectedTheme}
-					options={[
-						{ label: __('Use Active Theme', 'smart-theme-switcher'), value: '' },
-						...availableThemes
-					]}
-					onChange={handleChange}
-				/>
+			<SelectControl
+				label={__('Select a theme', 'smart-theme-switcher')}
+				value={selectedTheme}
+				options={[
+					{ label: __('Use Active Theme', 'smart-theme-switcher'), value: '' },
+					...availableThemes
+				]}
+				onChange={handleChange}
+			/>
 		);
 	};
 
@@ -60,4 +60,4 @@ import { useState, useEffect } from '@wordpress/element';
 		icon: 'admin-appearance',
 	});
 
-})( window.wp );
+})(window.wp);

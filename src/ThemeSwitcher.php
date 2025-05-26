@@ -210,8 +210,8 @@ class ThemeSwitcher {
 	public function add_preview_body_class( $classes ) {
 		// Only proceed if user can preview and we're in preview mode.
 		if ( $this->can_user_preview() && $this->get_preview_theme() ) {
-			$classes[] = 'ets-preview-mode';
-			$classes[] = 'ets-preview-' . sanitize_html_class( $this->get_preview_theme() );
+			$classes[] = 'sts-preview-mode';
+			$classes[] = 'sts-preview-' . sanitize_html_class( $this->get_preview_theme() );
 		}
 		
 		return $classes;
@@ -231,16 +231,16 @@ class ThemeSwitcher {
 
 		// Enqueue preview CSS.
 		wp_enqueue_style(
-			'ets-preview',
-			STS_PLUGIN_URL . 'assets/dist/ets-preview.css',
+			'sts-preview',
+			STS_PLUGIN_URL . 'assets/dist/sts-preview.css',
 			array(),
 			STS_PLUGIN_VERSION
 		);
 
 		// Enqueue preview JS.
 		wp_enqueue_script(
-			'ets-preview',
-			STS_PLUGIN_URL . 'assets/dist/ets-preview.js',
+			'sts-preview',
+			STS_PLUGIN_URL . 'assets/dist/sts-preview.js',
 			array( 'jquery' ),
 			STS_PLUGIN_VERSION,
 			true
@@ -248,11 +248,11 @@ class ThemeSwitcher {
 
 		// Localize script.
 		wp_localize_script(
-			'ets-preview',
-			'etsPreview',
+			'sts-preview',
+			'Preview',
 			array(
 				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'nonce'         => wp_create_nonce( 'ets-preview-nonce' ),
+				'nonce'         => wp_create_nonce( 'sts-preview-nonce' ),
 				'currentTheme'  => $this->get_preview_theme(),
 				'queryParam'    => $this->get_query_param_name(),
 				'isPreviewMode' => (bool) $this->get_preview_theme(),
@@ -274,8 +274,8 @@ class ThemeSwitcher {
 
 		// Enqueue editor script.
 		wp_enqueue_script(
-			'ets-editor',
-			STS_PLUGIN_URL . 'assets/dist/ets-editor.js',
+			'sts-editor',
+			STS_PLUGIN_URL . 'assets/dist/sts-editor.js',
 			array(
 				'wp-blocks',
 				'wp-element',
@@ -303,11 +303,11 @@ class ThemeSwitcher {
 
 		// Localize script.
 		wp_localize_script(
-			'ets-editor',
-			'etsEditor',
+			'sts-editor',
+			'stsEditor',
 			array(
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-				'nonce'        => wp_create_nonce( 'ets-editor-nonce' ),
+				'nonce'        => wp_create_nonce( 'sts-editor-nonce' ),
 				'themes'       => $theme_options,
 				'currentUrl'   => get_preview_post_link(),
 				'queryParam'   => $this->get_query_param_name(),

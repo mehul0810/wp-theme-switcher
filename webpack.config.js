@@ -4,10 +4,10 @@ const path = require('path');
 module.exports = {
   ...defaultConfig,
   entry: {
-    'ets-editor': path.resolve(process.cwd(), 'assets/src/js', 'ets-editor.js'),
-    'ets-preview-banner': path.resolve(process.cwd(), 'assets/src/js', 'ets-preview-banner.js'),
-    'ets-preview': path.resolve(process.cwd(), 'assets/src/js', 'ets-preview.js'),
-    'ets-settings': path.resolve(process.cwd(), 'assets/src/js', 'ets-settings.js'),
+    'editor': path.resolve(process.cwd(), 'assets/src/js', 'editor.js'),
+    'preview-banner': path.resolve(process.cwd(), 'assets/src/js', 'preview-banner.js'),
+    'preview': path.resolve(process.cwd(), 'assets/src/js', 'preview.js'),
+    'settings': path.resolve(process.cwd(), 'assets/src/js', 'settings.js'),
   },
   output: {
     filename: '[name].js',

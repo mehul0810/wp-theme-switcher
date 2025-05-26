@@ -91,7 +91,7 @@ class SettingsPage {
 		// Enqueue React and settings script.
 		wp_enqueue_script(
 			'sts-settings',
-			STS_PLUGIN_URL . 'assets/dist/ets-settings.js',
+			STS_PLUGIN_URL . 'assets/dist/sts-settings.js',
 			array( 
 				'wp-element', 
 				'wp-components', 
@@ -110,7 +110,7 @@ class SettingsPage {
 		// Enqueue settings CSS.
 		wp_enqueue_style(
 			'sts-settings',
-			STS_PLUGIN_URL . 'assets/dist/ets-settings.css',
+			STS_PLUGIN_URL . 'assets/dist/sts-settings.css',
 			array( 'wp-components' ),
 			STS_PLUGIN_VERSION
 		);

@@ -91,7 +91,7 @@ class Admin {
 			
 			// Add main node.
 			$wp_admin_bar->add_node( array(
-				'id'    => 'ets-preview',
+				'id'    => 'sts-preview',
 				'title' => sprintf(
 					/* translators: %s: Theme name */
 					__( 'Previewing: %s', 'easy-theme-switcher' ),
@@ -99,19 +99,19 @@ class Admin {
 				),
 				'href'  => '#',
 				'meta'  => array(
-					'class' => 'ets-preview-node',
+					'class' => 'sts-preview-node',
 				),
 			) );
 
 			// Add exit preview link.
 			$current_url = remove_query_arg( $theme_switcher->get_query_param_name(), esc_url( $_SERVER['REQUEST_URI'] ) );
 			$wp_admin_bar->add_node( array(
-				'id'     => 'ets-exit-preview',
-				'parent' => 'ets-preview',
+				'id'     => 'sts-exit-preview',
+				'parent' => 'sts-preview',
 				'title'  => __( 'Exit Preview', 'easy-theme-switcher' ),
 				'href'   => $current_url,
 				'meta'   => array(
-					'class' => 'ets-exit-preview-link',
+					'class' => 'sts-exit-preview-link',
 				),
 			) );
 
@@ -120,8 +120,8 @@ class Admin {
 			
 			// Add "Switch Theme" submenu.
 			$wp_admin_bar->add_node( array(
-				'id'     => 'ets-switch-theme',
-				'parent' => 'ets-preview',
+				'id'     => 'sts-switch-theme',
+				'parent' => 'sts-preview',
 				'title'  => __( 'Switch Theme', 'easy-theme-switcher' ),
 				'href'   => '#',
 			) );
@@ -129,12 +129,12 @@ class Admin {
 			// Add theme options.
 			foreach ( $themes as $theme_slug => $theme_name ) {
 				$wp_admin_bar->add_node( array(
-					'id'     => 'ets-theme-' . sanitize_html_class( $theme_slug ),
-					'parent' => 'ets-switch-theme',
+					'id'     => 'sts-theme-' . sanitize_html_class( $theme_slug ),
+					'parent' => 'sts-switch-theme',
 					'title'  => $theme_name,
 					'href'   => add_query_arg( $theme_switcher->get_query_param_name(), $theme_slug ),
 					'meta'   => array(
-						'class' => $theme_slug === $preview_theme ? 'ets-current-theme' : '',
+						'class' => $theme_slug === $preview_theme ? 'sts-current-theme' : '',
 					),
 				) );
 			}
