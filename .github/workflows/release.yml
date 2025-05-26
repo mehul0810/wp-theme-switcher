@@ -22,7 +22,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-          cache: 'npm'
+          
+      - name: Cache npm dependencies
+        id: npm-cache
+        run: |
+          echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+          
+      - uses: actions/cache@v3.3.1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install PHP Dependencies
         run: composer install --no-dev --optimize-autoloader

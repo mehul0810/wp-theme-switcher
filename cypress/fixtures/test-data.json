@@ -1,0 +1,11 @@
+{
+  "samplePost": {
+    "title": "Test Post for Theme Switching",
+    "content": "This is a test post for Smart Theme Switcher E2E tests.",
+    "id": 1
+  },
+  "themes": {
+    "classic": "twentytwenty",
+    "block": "twentytwentytwo"
+  }
+}
