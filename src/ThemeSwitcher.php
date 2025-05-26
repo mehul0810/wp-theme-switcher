@@ -54,26 +54,61 @@ class ThemeSwitcher {
 		
 		// Initialize editor assets.
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
+		
+		// Register post meta for theme switching.
+		add_action( 'init', array( $this, 'register_post_meta' ) );
 	}
 
 	/**
-	 * Get preview theme name from query parameter.
+	 * Get preview theme name for current request, supporting per-post meta, per-post-type, and fallback to active theme.
+	 *
+	 * Priority:
+	 * 1. Theme set in individual post (post meta)
+	 * 2. Theme set per post type from settings (if enabled and not 'use_active')
+	 * 3. Active theme (no override)
 	 *
 	 * @since 1.0.0
-	 * @return string|bool Theme name or false if not in preview mode.
+	 * @return string|bool Theme slug or false if no override.
 	 */
 	public function get_preview_theme() {
-		// Get settings.
 		$settings = get_option( 'smart_theme_switcher_settings', array() );
-		
-		// Get query parameter name.
 		$query_param = isset( $settings['preview_query_param'] ) ? $settings['preview_query_param'] : STS_DEFAULT_QUERY_PARAM;
-		
-		// Check if preview parameter exists.
+
+		// 1. Check if preview parameter exists in URL (global preview mode)
 		if ( isset( $_GET[ $query_param ] ) && ! empty( $_GET[ $query_param ] ) ) {
 			return sanitize_text_field( $_GET[ $query_param ] );
 		}
-		
+
+		// 2. Check for per-post theme assignment (only on singular post/page)
+		if ( is_singular() ) {
+			$post_id = get_queried_object_id();
+			if ( $post_id ) {
+				$meta_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+				if ( ! empty( $meta_theme ) ) {
+					return $meta_theme;
+				}
+			}
+		}
+
+		// 3. Check for per-post-type theme assignment from settings (if enabled and not 'use_active')
+		if ( is_singular() ) {
+			global $post;
+			if ( $post && isset( $settings['post_types'] ) && is_array( $settings['post_types'] ) ) {
+				$post_type = get_post_type( $post );
+				if (
+					$post_type &&
+					isset( $settings['post_types'][ $post_type ] ) &&
+					! empty( $settings['post_types'][ $post_type ]['enabled'] ) &&
+					isset( $settings['post_types'][ $post_type ]['theme'] ) &&
+					$settings['post_types'][ $post_type ]['theme'] !== 'use_active' &&
+					! empty( $settings['post_types'][ $post_type ]['theme'] )
+				) {
+					return sanitize_text_field( $settings['post_types'][ $post_type ]['theme'] );
+				}
+			}
+		}
+
+		// 4. Fallback: use active theme (no override)
 		return false;
 	}
 
@@ -146,21 +181,26 @@ class ThemeSwitcher {
 
 		// Verify the theme exists.
 		$theme = wp_get_theme( $this->get_preview_theme() );
-		
 		if ( ! $theme->exists() ) {
 			return $template;
 		}
 
 		// Get the template filename.
 		$template_file = basename( $template );
-		
-		// Look for the template in the preview theme.
 		$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
-		
+
+		// If the template exists in the selected theme, use it.
 		if ( file_exists( $theme_template ) ) {
 			return $theme_template;
 		}
-		
+
+		// Fallback: Use the selected theme's index.php if it exists.
+		$theme_index = $theme->get_stylesheet_directory() . '/index.php';
+		if ( file_exists( $theme_index ) ) {
+			return $theme_index;
+		}
+
+		// Final fallback: Use the original template from the active theme (do NOT return a non-existent file).
 		return $template;
 	}
 
@@ -278,6 +318,25 @@ class ThemeSwitcher {
 				'activeTheme'  => wp_get_theme()->get_stylesheet(),
 			)
 		);
+	}
+
+	/**
+	 * Register post meta for theme switching.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function register_post_meta() {
+		// Register meta for all public post types.
+		foreach ( get_post_types( array( 'public' => true ) ) as $post_type ) {
+			register_post_meta( $post_type, 'smart_theme_switcher_active_theme', array(
+				'show_in_rest'      => true,
+				'single'            => true,
+				'type'              => 'string',
+				'auth_callback'     => function() { return current_user_can( 'edit_posts' ); },
+				'sanitize_callback' => 'sanitize_text_field',
+			) );
+		}
 	}
 
 	/**
