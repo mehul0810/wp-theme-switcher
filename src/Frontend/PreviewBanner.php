@@ -41,10 +41,18 @@ class PreviewBanner {
 	 * @return void
 	 */
 	private function init_hooks() {
-		// Enqueue preview banner scripts and styles.
+		// Only register hooks if preview mode is enabled in settings
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
+		
+		if ( ! $preview_enabled ) {
+			return;
+		}
+		
+		// Enqueue preview banner scripts and styles
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		
-		// AJAX handler for switching themes.
+		// AJAX handler for switching themes
 		add_action( 'wp_ajax_sts_switch_theme', array( $this, 'ajax_switch_theme' ) );
 	}
 

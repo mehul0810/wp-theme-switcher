@@ -331,17 +331,20 @@ class Settings {
 		if ( isset( $input['advanced'] ) && is_array( $input['advanced'] ) ) {
 			$sanitized_input['advanced'] = array();
 			foreach ( $input['advanced'] as $key => $value ) {
-				if ( $key === 'enable_preview' ) {
-					$sanitized_input['enable_preview'] = $value === 'yes' ? 'yes' : 'no';
-				} else {
-					$sanitized_input['advanced'][ sanitize_key( $key ) ] = sanitize_text_field( $value );
-				}
+				$sanitized_input['advanced'][ sanitize_key( $key ) ] = sanitize_text_field( $value );
 			}
+			
+			// Set enable_preview based on the advanced setting
+			$sanitized_input['enable_preview'] = isset( $input['advanced']['preview_enabled'] ) && 
+			                                    $input['advanced']['preview_enabled'] ? 'yes' : 'no';
 		} else {
 			$sanitized_input['advanced'] = array(
 				'preview_enabled' => true,
 				'debug_enabled'   => false,
 			);
+			
+			// Default enable_preview to 'yes' if advanced settings are missing
+			$sanitized_input['enable_preview'] = 'yes';
 		}
 
 		// For backward compatibility, maintain the old settings structure as well.
