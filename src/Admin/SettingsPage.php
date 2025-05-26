@@ -110,7 +110,7 @@ class SettingsPage {
 		// Enqueue settings CSS.
 		wp_enqueue_style(
 			'sts-settings',
-			STS_PLUGIN_URL . 'assets/dist/sts-settings.css',
+			STS_PLUGIN_URL . 'assets/dist/settings.css',
 			array( 'wp-components' ),
 			STS_PLUGIN_VERSION
 		);
