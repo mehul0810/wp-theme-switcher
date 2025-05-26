@@ -41,39 +41,67 @@ class PreviewBanner {
 	 * @return void
 	 */
 	private function init_hooks() {
-		// Enqueue preview banner scripts and styles.
+		// Only register hooks if preview mode is enabled in settings
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
+		
+		if ( ! $preview_enabled ) {
+			return;
+		}
+		
+		// Enqueue preview banner scripts and styles
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		
-		// AJAX handler for switching themes.
+		// AJAX handler for switching themes
 		add_action( 'wp_ajax_sts_switch_theme', array( $this, 'ajax_switch_theme' ) );
 	}
 
 	/**
 	 * Enqueue scripts and styles for the preview banner.
 	 *
+	 * Only enqueues if:
+	 * 1. User has permission to preview themes
+	 * 2. Preview mode is enabled in settings
+	 * 3. User is currently in preview mode with a valid theme
+	 * 4. Preview banner is enabled in settings
+	 *
+	 * This ensures the banner only appears for authorized users in preview mode
+	 * and never affects regular visitors.
+	 *
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function enqueue_scripts() {
-		// Get theme switcher instance.
+		// Get theme switcher instance
 		$theme_switcher = new ThemeSwitcher();
+		
+		// Get settings
 		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		
+		// Check if preview mode is enabled in settings
 		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
-		// Only enqueue for users who can preview, preview mode enabled, and are in preview mode.
-		if ( ! $preview_enabled || ! $theme_switcher->can_user_preview() || ! $theme_switcher->get_preview_theme() ) {
+		if ( ! $preview_enabled ) {
 			return;
 		}
-
-		// Get settings.
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
-		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
 		
-		// Only enqueue if banner is enabled.
+		// Check if user has permission to preview
+		if ( ! $theme_switcher->can_user_preview() ) {
+			return;
+		}
+		
+		// Check if user is currently in preview mode
+		$preview_theme = $theme_switcher->get_preview_theme();
+		if ( ! $preview_theme ) {
+			return;
+		}
+		
+		// Check if preview banner is enabled
+		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
 		if ( ! $enable_banner ) {
 			return;
 		}
 
-		// Enqueue banner CSS.
+		// Enqueue banner CSS
 		wp_enqueue_style(
 			'sts-preview-banner',
 			STS_PLUGIN_URL . 'assets/dist/preview-banner.css',
@@ -81,7 +109,7 @@ class PreviewBanner {
 			STS_PLUGIN_VERSION
 		);
 
-		// Enqueue banner JS.
+		// Enqueue banner JS
 		wp_enqueue_script(
 			'sts-preview-banner',
 			STS_PLUGIN_URL . 'assets/dist/preview-banner.js',
@@ -90,7 +118,7 @@ class PreviewBanner {
 			true
 		);
 
-		// Localize script.
+		// Localize script
 		wp_localize_script(
 			'sts-preview-banner',
 			'PreviewBanner',
@@ -99,44 +127,56 @@ class PreviewBanner {
 				'nonce'         => wp_create_nonce( 'sts-preview-banner-nonce' ),
 				'currentUrl'    => esc_url( remove_query_arg( $theme_switcher->get_query_param_name() ) ),
 				'queryParam'    => $theme_switcher->get_query_param_name(),
-				'currentTheme'  => $theme_switcher->get_preview_theme(),
+				'currentTheme'  => $preview_theme,
 			)
 		);
 	}
 
 	/**
-	 * AJAX handler for switching themes.
+	 * AJAX handler for switching themes in Preview Mode.
+	 *
+	 * This only works for authorized users with preview permission.
+	 * It never affects visitors or SEO.
 	 *
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function ajax_switch_theme() {
-		// Check nonce.
+		// Check nonce
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'sts-preview-banner-nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
 		}
 
-		// Check permissions.
+		// Get theme switcher instance
 		$theme_switcher = new ThemeSwitcher();
+		
+		// Check if preview mode is enabled in settings
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
+		if ( ! $preview_enabled ) {
+			wp_send_json_error( array( 'message' => __( 'Preview mode is disabled in settings.', 'smart-theme-switcher' ) ) );
+		}
+		
+		// Check if user has permission to preview
 		if ( ! $theme_switcher->can_user_preview() ) {
 			wp_send_json_error( array( 'message' => __( 'You do not have permission to preview themes.', 'smart-theme-switcher' ) ) );
 		}
 
-		// Get theme from request.
+		// Get theme from request
 		$theme = isset( $_POST['theme'] ) ? sanitize_text_field( wp_unslash( $_POST['theme'] ) ) : '';
 		
-		// Check if theme exists.
+		// Check if theme exists
 		if ( empty( $theme ) || ! wp_get_theme( $theme )->exists() ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid theme selection.', 'smart-theme-switcher' ) ) );
 		}
 
-		// Get current URL.
+		// Get current URL
 		$current_url = isset( $_POST['currentUrl'] ) ? esc_url_raw( wp_unslash( $_POST['currentUrl'] ) ) : '';
 		
-		// Build new URL with theme parameter.
+		// Build new URL with theme parameter
 		$new_url = add_query_arg( $theme_switcher->get_query_param_name(), $theme, $current_url );
 		
-		// Send success response.
+		// Send success response
 		wp_send_json_success( array(
 			'message' => __( 'Theme switched successfully.', 'smart-theme-switcher' ),
 			'url'     => $new_url,

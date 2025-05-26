@@ -44,23 +44,21 @@ class ThemeResolver {
 	}
 
 	/**
-	 * Determine the theme to use for current request.
+	 * Determine the theme to use for current request in 'Theme Set Mode'.
+	 * This mode applies to all visitors (not just admins) and affects SEO.
 	 *
 	 * Implements priority logic:
 	 * 1. Theme set in individual post (post meta)
 	 * 2. Theme set per post type or taxonomy from settings
 	 * 3. Active theme (no override)
 	 *
+	 * Note: This method does NOT include preview mode logic, which is handled
+	 * separately and only applies to authorized users.
+	 *
 	 * @since 1.0.0
-	 * @param string|null $preview_theme Optional theme override for preview mode.
 	 * @return string|bool Theme slug or false if no override.
 	 */
-	public function resolve_theme( $preview_theme = null ) {
-		// If a preview theme is specified, it takes precedence for authorized users
-		if ( ! empty( $preview_theme ) ) {
-			return $preview_theme;
-		}
-
+	public function resolve_theme() {
 		// 1. Check for per-post theme assignment (individual post setting)
 		$post_theme = $this->get_post_theme();
 		if ( false !== $post_theme ) {
@@ -190,6 +188,9 @@ class ThemeResolver {
 	/**
 	 * Get theme slug from query parameter.
 	 *
+	 * Used for Preview Mode only - determines if a theme preview is requested
+	 * via query parameter.
+	 *
 	 * @since 1.0.0
 	 * @return string|bool Theme slug or false if no query parameter.
 	 */
@@ -201,5 +202,15 @@ class ThemeResolver {
 		}
 
 		return false;
+	}
+	
+	/**
+	 * Determine if preview mode is enabled in settings.
+	 *
+	 * @since 1.0.0
+	 * @return bool True if preview mode is enabled, false otherwise.
+	 */
+	public function is_preview_mode_enabled() {
+		return isset( $this->settings['enable_preview'] ) && $this->settings['enable_preview'] === 'yes';
 	}
 }

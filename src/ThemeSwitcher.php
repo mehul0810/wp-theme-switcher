@@ -16,13 +16,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * ThemeSwitcher Class.
  *
- * Handles the core functionality of theme switching.
+ * Handles the core functionality of theme switching with two separate modes:
  * 
- * This class works with ThemeResolver to determine which theme to load
- * based on a priority system:
- * 1. Individual post setting (highest priority)
- * 2. Post type or taxonomy setting (medium priority)
- * 3. Global/default theme (lowest priority)
+ * 1. Preview Mode: For administrators/editors to preview themes privately
+ *    - Only visible to logged-in users with proper capabilities
+ *    - Enabled/disabled via settings
+ *    - Shows a preview banner
+ *    - Does not affect visitors or SEO
+ *
+ * 2. Theme Set Mode: For setting specific themes for posts, types, taxonomies
+ *    - Visible to all users (logged-in and visitors)
+ *    - Affects SEO and all site visitors
+ *    - Based on individual post settings or post type/taxonomy settings
  *
  * @since 1.0.0
  */
@@ -56,23 +61,20 @@ class ThemeSwitcher {
 	 * @return void
 	 */
 	private function init_hooks() {
-		// Filter to switch theme.
+		// Theme Set Mode hooks (affects all users)
+		add_filter( 'template', array( $this, 'set_theme_template' ) );
+		add_filter( 'stylesheet', array( $this, 'set_theme_stylesheet' ) );
+		add_filter( 'template_include', array( $this, 'set_theme_template_include' ), 999 );
+		
+		// Preview Mode hooks (admin-only)
 		add_filter( 'template', array( $this, 'preview_theme_template' ) );
 		add_filter( 'stylesheet', array( $this, 'preview_theme_stylesheet' ) );
-		
-		// Template include filter for complete theme switching.
-		add_filter( 'template_include', array( $this, 'preview_theme_template_include' ), 999 );
-		
-		// Add body class for preview mode.
+		add_filter( 'template_include', array( $this, 'preview_theme_template_include' ), 1000 );
 		add_filter( 'body_class', array( $this, 'add_preview_body_class' ) );
 		
-		// Enqueue scripts and styles.
+		// General hooks (for both modes)
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		
-		// Initialize editor assets.
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
-		
-		// Register post meta for theme switching.
 		add_action( 'init', array( $this, 'register_post_meta' ) );
 	}
 
@@ -88,36 +90,43 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Get preview theme name for current request (admin preview mode).
+	 * Get preview theme for current request (Preview Mode - admin only).
 	 *
-	 * Uses ThemeResolver to determine theme with proper priority:
-	 * 1. Preview parameter in URL (only for authorized users)
-	 * 2. Theme set in individual post (post meta)
-	 * 3. Theme set per post type or taxonomy from settings
-	 * 4. Active theme (no override)
+	 * Preview mode is only available to authorized users and when enabled in settings.
+	 * This theme is only shown to the current user and never affects visitors or SEO.
 	 *
 	 * @since 1.0.0
-	 * @return string|bool Theme slug or false if no override.
+	 * @return string|bool Theme slug or false if preview mode is disabled or user can't preview.
 	 */
 	public function get_preview_theme() {
-		// Only for preview mode (admins/editors, preview enabled, and query param present)
-		$settings = get_option('smart_theme_switcher_settings', array());
-		$preview_enabled = isset($settings['enable_preview']) && $settings['enable_preview'] === 'yes';
-		if ( ! $preview_enabled || ! $this->can_user_preview() ) {
+		// Only proceed if Preview Mode is enabled in settings
+		if ( ! $this->theme_resolver->is_preview_mode_enabled() ) {
 			return false;
 		}
+		
+		// Only proceed if current user has permission to preview themes
+		if ( ! $this->can_user_preview() ) {
+			return false;
+		}
+		
+		// Get theme from query parameter
 		$preview_theme = $this->theme_resolver->get_preview_theme_from_query();
-		if ( ! empty($preview_theme) ) {
+		if ( ! empty( $preview_theme ) ) {
 			return $preview_theme;
 		}
+		
 		return false;
 	}
 
 	/**
 	 * Check if user can preview themes.
 	 *
+	 * This is part of Preview Mode which is separate from Theme Set Mode.
+	 * By default, only logged-in users with edit_posts capability can preview themes.
+	 * This can be filtered to extend or restrict access to theme previews.
+	 *
 	 * @since 1.0.0
-	 * @return bool
+	 * @return bool Whether the current user can preview themes.
 	 */
 	public function can_user_preview() {
 		/**
@@ -133,14 +142,17 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Filter the theme template.
+	 * Filter the theme template for Preview Mode (admin only).
+	 * 
+	 * This filter is only applied for authorized users in preview mode.
+	 * It never affects visitors or SEO.
 	 *
 	 * @since 1.0.0
 	 * @param string $template Current theme template.
-	 * @return string New theme template.
+	 * @return string New theme template or unchanged if not in preview mode.
 	 */
 	public function preview_theme_template( $template ) {
-		// Preview mode (admin-only, query param)
+		// Check if we're in preview mode (admin only)
 		$preview_theme = $this->get_preview_theme();
 		if ( $preview_theme ) {
 			$theme = wp_get_theme( $preview_theme );
@@ -148,7 +160,26 @@ class ThemeSwitcher {
 				return $theme->get_template();
 			}
 		}
-		// Persistent assignment (all users)
+		return $template;
+	}
+	
+	/**
+	 * Filter the theme template for Theme Set Mode (all users).
+	 * 
+	 * This filter applies to all visitors and affects SEO.
+	 * It uses the theme set for individual posts, post types, or taxonomies.
+	 *
+	 * @since 1.0.0
+	 * @param string $template Current theme template.
+	 * @return string New theme template or unchanged if no theme is set.
+	 */
+	public function set_theme_template( $template ) {
+		// Skip if we're in preview mode - that takes precedence
+		if ( $this->get_preview_theme() ) {
+			return $template;
+		}
+		
+		// Get theme set for the current post/archive (visible to all users)
 		$assigned_theme = $this->get_assigned_theme();
 		if ( $assigned_theme ) {
 			$theme = wp_get_theme( $assigned_theme );
@@ -160,13 +191,17 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Filter the theme stylesheet.
+	 * Filter the theme stylesheet for Preview Mode (admin only).
+	 * 
+	 * This filter is only applied for authorized users in preview mode.
+	 * It never affects visitors or SEO.
 	 *
 	 * @since 1.0.0
 	 * @param string $stylesheet Current theme stylesheet.
-	 * @return string New theme stylesheet.
+	 * @return string New theme stylesheet or unchanged if not in preview mode.
 	 */
 	public function preview_theme_stylesheet( $stylesheet ) {
+		// Check if we're in preview mode (admin only)
 		$preview_theme = $this->get_preview_theme();
 		if ( $preview_theme ) {
 			$theme = wp_get_theme( $preview_theme );
@@ -174,6 +209,26 @@ class ThemeSwitcher {
 				return $theme->get_stylesheet();
 			}
 		}
+		return $stylesheet;
+	}
+	
+	/**
+	 * Filter the theme stylesheet for Theme Set Mode (all users).
+	 * 
+	 * This filter applies to all visitors and affects SEO.
+	 * It uses the theme set for individual posts, post types, or taxonomies.
+	 *
+	 * @since 1.0.0
+	 * @param string $stylesheet Current theme stylesheet.
+	 * @return string New theme stylesheet or unchanged if no theme is set.
+	 */
+	public function set_theme_stylesheet( $stylesheet ) {
+		// Skip if we're in preview mode - that takes precedence
+		if ( $this->get_preview_theme() ) {
+			return $stylesheet;
+		}
+		
+		// Get theme set for the current post/archive (visible to all users)
 		$assigned_theme = $this->get_assigned_theme();
 		if ( $assigned_theme ) {
 			$theme = wp_get_theme( $assigned_theme );
@@ -185,87 +240,129 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Filter template include for theme preview and persistent assignment.
+	 * Filter template include for Preview Mode (admin only).
+	 *
+	 * This filter is only applied for authorized users in preview mode.
+	 * It never affects visitors or SEO.
 	 *
 	 * @since 1.0.0
 	 * @param string $template The path of the template to include.
 	 * @return string The path of the template to include.
 	 */
 	public function preview_theme_template_include( $template ) {
-		// 1. Preview mode (admin-only, query param, preview enabled)
+		// Only proceed if we're in preview mode (admin only)
 		$preview_theme = $this->get_preview_theme();
-		if ( $preview_theme ) {
-			$theme = wp_get_theme( $preview_theme );
-			if ( $theme->exists() ) {
-				$template_file = basename( $template );
-				$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
-				if ( file_exists( $theme_template ) ) {
-					return $theme_template;
-				}
-				// Fallback to theme index.php if template file missing
-				$theme_index = $theme->get_stylesheet_directory() . '/index.php';
-				if ( file_exists( $theme_index ) ) {
-					return $theme_index;
-				}
-			}
-			// If preview theme is invalid, fallback to default template
+		if ( ! $preview_theme ) {
 			return $template;
 		}
-
-		// 2. Persistent assignment (all users, per-post, post type, taxonomy)
+		
+		$theme = wp_get_theme( $preview_theme );
+		if ( $theme->exists() ) {
+			$template_file = basename( $template );
+			$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
+			
+			if ( file_exists( $theme_template ) ) {
+				return $theme_template;
+			}
+			
+			// Fallback to theme index.php if template file missing
+			$theme_index = $theme->get_stylesheet_directory() . '/index.php';
+			if ( file_exists( $theme_index ) ) {
+				return $theme_index;
+			}
+		}
+		
+		// If preview theme is invalid, fallback to default template
+		return $template;
+	}
+	
+	/**
+	 * Filter template include for Theme Set Mode (all users).
+	 *
+	 * This filter applies to all visitors and affects SEO.
+	 * It uses the theme set for individual posts, post types, or taxonomies.
+	 *
+	 * @since 1.0.0
+	 * @param string $template The path of the template to include.
+	 * @return string The path of the template to include.
+	 */
+	public function set_theme_template_include( $template ) {
+		// Skip if we're in preview mode - that takes precedence
+		if ( $this->get_preview_theme() ) {
+			return $template;
+		}
+		
+		// Get theme set for the current post/archive (visible to all users)
 		$assigned_theme = $this->get_assigned_theme();
-		if ( $assigned_theme ) {
-			$theme = wp_get_theme( $assigned_theme );
-			if ( $theme->exists() ) {
-				$template_file = basename( $template );
-				$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
-				if ( file_exists( $theme_template ) ) {
-					return $theme_template;
-				}
-				// Fallback to theme index.php if template file missing
-				$theme_index = $theme->get_stylesheet_directory() . '/index.php';
-				if ( file_exists( $theme_index ) ) {
-					return $theme_index;
-				}
-			}
-			// If assigned theme is invalid, fallback to default template
+		if ( ! $assigned_theme ) {
 			return $template;
 		}
-
-		// 3. Default: use active theme
+		
+		$theme = wp_get_theme( $assigned_theme );
+		if ( $theme->exists() ) {
+			$template_file = basename( $template );
+			$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
+			
+			if ( file_exists( $theme_template ) ) {
+				return $theme_template;
+			}
+			
+			// Fallback to theme index.php if template file missing
+			$theme_index = $theme->get_stylesheet_directory() . '/index.php';
+			if ( file_exists( $theme_index ) ) {
+				return $theme_index;
+			}
+		}
+		
+		// If assigned theme is invalid, fallback to default template
 		return $template;
 	}
 
 	/**
-	 * Add body class for preview mode.
+	 * Add body class for Preview Mode (admin only).
+	 *
+	 * This only applies to authorized users in preview mode.
+	 * It adds classes to help style the preview experience differently.
 	 *
 	 * @since 1.0.0
 	 * @param array $classes Array of body classes.
 	 * @return array Modified array of body classes.
 	 */
 	public function add_preview_body_class( $classes ) {
-		// Only proceed if user can preview and we're in preview mode.
-		if ( $this->can_user_preview() && $this->get_preview_theme() ) {
-			$classes[] = 'sts-preview-mode';
-			$classes[] = 'sts-preview-' . sanitize_html_class( $this->get_preview_theme() );
+		// Only proceed if we're in preview mode (admin only)
+		$preview_theme = $this->get_preview_theme();
+		if ( ! $preview_theme ) {
+			return $classes;
 		}
+		
+		// Add classes for preview mode
+		$classes[] = 'sts-preview-mode';
+		$classes[] = 'sts-preview-' . sanitize_html_class( $preview_theme );
 		
 		return $classes;
 	}
 
 	/**
-	 * Enqueue scripts and styles for the frontend.
+	 * Enqueue scripts and styles for Preview Mode.
+	 *
+	 * These scripts and styles are only loaded for users who can preview themes.
+	 * They never affect regular visitors.
 	 *
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function enqueue_scripts() {
-		// Only enqueue for logged-in users who can preview.
+		// Check if preview mode is enabled in settings
+		if ( ! $this->theme_resolver->is_preview_mode_enabled() ) {
+			return;
+		}
+		
+		// Only enqueue for users who can preview themes
 		if ( ! $this->can_user_preview() ) {
 			return;
 		}
 
-		// Enqueue preview CSS.
+		// Enqueue preview CSS
 		wp_enqueue_style(
 			'sts-preview',
 			STS_PLUGIN_URL . 'assets/dist/sts-preview.css',
@@ -273,7 +370,7 @@ class ThemeSwitcher {
 			STS_PLUGIN_VERSION
 		);
 
-		// Enqueue preview JS.
+		// Enqueue preview JS
 		wp_enqueue_script(
 			'sts-preview',
 			STS_PLUGIN_URL . 'assets/dist/preview.js',
@@ -282,7 +379,7 @@ class ThemeSwitcher {
 			true
 		);
 
-		// Localize script.
+		// Localize script
 		wp_localize_script(
 			'sts-preview',
 			'Preview',
@@ -297,18 +394,21 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Enqueue editor assets.
+	 * Enqueue editor assets for Theme Set Mode.
+	 *
+	 * These assets allow setting a theme for individual posts in the editor.
+	 * This is separate from Preview Mode and affects all users.
 	 *
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function enqueue_editor_assets() {
-		// Only enqueue for users who can preview.
-		if ( ! $this->can_user_preview() ) {
+		// Only enqueue for users who can assign themes to posts
+		if ( ! current_user_can( 'edit_posts' ) ) {
 			return;
 		}
 
-		// Enqueue editor script.
+		// Enqueue editor script
 		wp_enqueue_script(
 			'sts-editor',
 			STS_PLUGIN_URL . 'assets/dist/individual.js',
@@ -326,7 +426,7 @@ class ThemeSwitcher {
 			true
 		);
 
-		// Get all themes.
+		// Get all themes
 		$themes = wp_get_themes();
 		$theme_options = array();
 
@@ -337,7 +437,7 @@ class ThemeSwitcher {
 			);
 		}
 
-		// Localize script.
+		// Localize script
 		wp_localize_script(
 			'sts-editor',
 			'stsEditor',
