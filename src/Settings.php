@@ -348,7 +348,7 @@ class Settings {
 		}
 
 		// For backward compatibility, maintain the old settings structure as well.
-		$sanitized_input['enable_preview_banner'] = isset( $sanitized_input['advanced']['preview_enabled'] ) && $sanitized_input['advanced']['preview_enabled'] ? 'yes' : 'no';
+		$sanitized_input['enable_preview_banner'] = 'yes'; // Always enabled in new version
 		$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] ) ? sanitize_key( $input['preview_query_param'] ) : STS_DEFAULT_QUERY_PARAM;
 		$sanitized_input['default_preview_theme'] = isset( $input['default_preview_theme'] ) ? sanitize_text_field( $input['default_preview_theme'] ) : '';
 
