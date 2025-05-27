@@ -123,7 +123,6 @@ class SettingsPage {
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
 				'restUrl'     => esc_url_raw( rest_url( 'smart-theme-switcher/v1' ) ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
-				'ajaxNonce'   => wp_create_nonce( 'sts-settings-nonce' ), // For backward compatibility
 				'version'     => STS_PLUGIN_VERSION,
 				'adminUrl'    => admin_url(),
 				'docUrl'      => 'https://github.com/mehul0810/smart-theme-switcher',
@@ -155,17 +154,6 @@ class SettingsPage {
 					'loading'             => __( 'Loading...', 'smart-theme-switcher' ),
 					'error'               => __( 'Error Saving Settings', 'smart-theme-switcher' ),
 					'success'             => __( 'Settings saved successfully!', 'smart-theme-switcher' ),
-					
-					// Legacy strings.
-					'enableBanner'        => __( 'Enable Preview Banner', 'smart-theme-switcher' ),
-					'enableBannerHelp'    => __( 'Display a banner at the top of the page when previewing a theme.', 'smart-theme-switcher' ),
-					'defaultTheme'        => __( 'Default Preview Theme', 'smart-theme-switcher' ),
-					'defaultThemeHelp'    => __( 'Select the default theme for new previews.', 'smart-theme-switcher' ),
-					'queryParam'          => __( 'Query Parameter', 'smart-theme-switcher' ),
-					'queryParamHelp'      => __( 'Customize the URL parameter used for theme previews.', 'smart-theme-switcher' ),
-					'settingsDescription' => __( 'Configure how theme previews work on your site.', 'smart-theme-switcher' ),
-					'yes'                 => __( 'Yes', 'smart-theme-switcher' ),
-					'no'                  => __( 'No', 'smart-theme-switcher' ),
 					'useActiveTheme'      => __( 'Use Active Theme', 'smart-theme-switcher' ),
 				),
 			)

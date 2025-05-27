@@ -44,10 +44,6 @@ class Settings {
 		
 		// Register REST API routes.
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-		
-		// Legacy AJAX handlers (for backward compatibility).
-		add_action( 'wp_ajax_sts_save_settings', array( $this, 'ajax_save_settings' ) );
-		add_action( 'wp_ajax_sts_get_settings', array( $this, 'ajax_get_settings' ) );
 	}
 
 	/**
@@ -250,15 +246,25 @@ class Settings {
 	public function rest_update_settings( $request ) {
 		$params = $request->get_json_params();
 		// Only allow expected keys
-		$allowed = array('post_types', 'taxonomies', 'advanced', 'enable_preview_banner', 'default_preview_theme', 'preview_query_param');
+		$allowed = array('post_types', 'taxonomies', 'advanced', 'preview_query_param');
 		$settings = array();
 		foreach ( $allowed as $key ) {
 			if ( isset( $params[ $key ] ) ) {
 				$settings[ $key ] = $params[ $key ];
 			}
 		}
-		update_option( 'smart_theme_switcher_settings', $settings );
-		return rest_ensure_response( array( 'success' => true, 'settings' => $settings ) );
+		
+		// Sanitize the settings
+		$sanitized_settings = $this->sanitize_settings( $settings );
+		
+		// Update the settings
+		update_option( 'smart_theme_switcher_settings', $sanitized_settings );
+		
+		// Clear theme caches when settings are updated
+		$theme_switcher = new ThemeSwitcher();
+		$theme_switcher->clear_theme_caches();
+		
+		return rest_ensure_response( array( 'success' => true, 'settings' => $sanitized_settings ) );
 	}
 
 	/**
@@ -271,28 +277,6 @@ class Settings {
 	public function sanitize_settings( $input ) {
 		$sanitized_input = array();
 
-		// Handle legacy settings format.
-		if ( isset( $input['enable_preview_banner'] ) || isset( $input['default_preview_theme'] ) || isset( $input['preview_query_param'] ) ) {
-			// Enable preview banner.
-			$sanitized_input['enable_preview_banner'] = isset( $input['enable_preview_banner'] )
-				? sanitize_text_field( $input['enable_preview_banner'] )
-				: 'yes';
-
-			// Default preview theme.
-			$sanitized_input['default_preview_theme'] = isset( $input['default_preview_theme'] )
-				? sanitize_text_field( $input['default_preview_theme'] )
-				: '';
-
-			// Preview query parameter.
-			$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] )
-				? sanitize_key( $input['preview_query_param'] )
-				: STS_DEFAULT_QUERY_PARAM;
-
-			return $sanitized_input;
-		}
-
-		// New settings format.
-		
 		// Post types.
 		if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
 			$sanitized_input['post_types'] = array();
@@ -347,11 +331,6 @@ class Settings {
 			$sanitized_input['enable_preview'] = 'yes';
 		}
 
-		// For backward compatibility, maintain the old settings structure as well.
-		$sanitized_input['enable_preview_banner'] = isset( $sanitized_input['advanced']['preview_enabled'] ) && $sanitized_input['advanced']['preview_enabled'] ? 'yes' : 'no';
-		$sanitized_input['preview_query_param'] = isset( $input['preview_query_param'] ) ? sanitize_key( $input['preview_query_param'] ) : STS_DEFAULT_QUERY_PARAM;
-		$sanitized_input['default_preview_theme'] = isset( $input['default_preview_theme'] ) ? sanitize_text_field( $input['default_preview_theme'] ) : '';
-
 		return $sanitized_input;
 	}
 
@@ -367,63 +346,5 @@ class Settings {
 		return is_array( $settings ) ? $settings : array();
 	}
 
-	/**
-	 * Save settings via AJAX (legacy method).
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function ajax_save_settings() {
-		// Check nonce.
-		$this->check_nonce( 'sts-settings-nonce' );
 
-		// Check permissions.
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to update settings.', 'smart-theme-switcher' ) ) );
-		}
-
-		// Get settings from request.
-		$settings = isset( $_POST['settings'] ) ? json_decode( wp_unslash( $_POST['settings'] ), true ) : array();
-
-		// Sanitize settings.
-		$sanitized_settings = $this->sanitize_settings( $settings );
-
-		// Update settings in both locations for compatibility.
-		update_option( 'smart_theme_switcher_settings', $sanitized_settings );
-
-		// Send success response.
-		wp_send_json_success( array(
-			'message'  => __( 'Settings saved successfully.', 'smart-theme-switcher' ),
-			'settings' => $sanitized_settings,
-		) );
-	}
-
-	/**
-	 * Get settings via AJAX (legacy method).
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function ajax_get_settings() {
-		// Check nonce.
-		$this->check_nonce( 'sts-settings-nonce' );
-
-		// Check permissions.
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to view settings.', 'smart-theme-switcher' ) ) );
-		}
-
-		// Get settings.
-		$settings = $this->get_settings();
-
-		// Get themes.
-		$themes_instance = new ThemeSwitcher();
-		$themes = $themes_instance->get_available_themes();
-
-		// Send response.
-		wp_send_json_success( array(
-			'settings' => $settings,
-			'themes'   => $themes,
-		) );
-	}
 }

@@ -28,6 +28,8 @@
 /* Add a subtle indicator to the editing screen when previewing */
 body.sts-preview-mode {
     position: relative;
+    /* Add padding to body to account for preview banner */
+    padding-top: 48px !important;
 }
 
 body.sts-preview-mode::after {
@@ -38,10 +40,114 @@ body.sts-preview-mode::after {
     right: 0;
     height: 3px;
     background-color: #d54e21;
-    z-index: 999999;
+    z-index: 999998;
 }
 
 /* Hide the indicator in the admin area, except in preview frame */
 body.wp-admin:not(iframe#content-iframe) body.sts-preview-mode::after {
     display: none;
+}
+
+/* Preview Banner */
+.sts-preview-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background-color: #23282d;
+    color: #fff;
+    z-index: 999999;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sts-preview-banner-inner {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.sts-preview-label {
+    margin-right: 8px;
+}
+
+.sts-preview-theme-name {
+    color: #00b9eb;
+    margin-right: 16px;
+}
+
+.sts-preview-controls {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.sts-theme-select {
+    margin-right: 12px;
+    min-width: 200px;
+    height: 30px;
+    border-radius: 3px;
+    border: 1px solid #7e8993;
+    background-color: #fff;
+    box-shadow: 0 0 0 transparent;
+    color: #32373c;
+}
+
+.sts-exit-preview-button {
+    background-color: #d54e21 !important;
+    color: #fff !important;
+    border-color: #d54e21 !important;
+    height: 30px;
+    line-height: 28px;
+    padding: 0 12px;
+    font-size: 13px;
+    box-shadow: none !important;
+}
+
+.sts-exit-preview-button:hover,
+.sts-exit-preview-button:focus {
+    background-color: #be3c13 !important;
+    color: #fff !important;
+    border-color: #be3c13 !important;
+}
+
+/* Adjust for admin bar */
+.admin-bar .sts-preview-banner {
+    top: 32px;
+}
+
+.admin-bar body.sts-preview-mode {
+    padding-top: 80px !important;
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 782px) {
+    .admin-bar .sts-preview-banner {
+        top: 46px;
+    }
+    
+    .sts-preview-banner-inner {
+        flex-wrap: wrap;
+    }
+    
+    .sts-preview-controls {
+        margin-left: 0;
+        margin-top: 8px;
+        width: 100%;
+    }
+    
+    body.sts-preview-mode {
+        padding-top: 88px !important;
+    }
+    
+    .admin-bar body.sts-preview-mode {
+        padding-top: 134px !important;
+    }
 }
