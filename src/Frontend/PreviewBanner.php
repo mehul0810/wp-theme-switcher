@@ -97,12 +97,6 @@ class PreviewBanner {
 		if ( ! $preview_theme ) {
 			return;
 		}
-		
-		// Check if preview banner is enabled
-		$enable_banner = isset( $settings['enable_preview_banner'] ) ? 'yes' === $settings['enable_preview_banner'] : true;
-		if ( ! $enable_banner ) {
-			return;
-		}
 
 		// Enqueue banner CSS
 		wp_enqueue_style(

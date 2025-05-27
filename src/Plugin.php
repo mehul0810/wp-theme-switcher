@@ -104,8 +104,6 @@ final class Plugin {
 		// Set default options.
 		$default_options = array(
 			'enable_preview'        => 'yes',
-			'enable_preview_banner' => 'yes',
-			'default_preview_theme' => '',
 			'preview_query_param'   => STS_DEFAULT_QUERY_PARAM,
 			'advanced'              => array(
 				'preview_enabled'     => true,

@@ -59,8 +59,8 @@ class Admin {
 		// Add settings link.
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'options-general.php?page=easy-theme-switcher' ),
-			__( 'Settings', 'easy-theme-switcher' )
+			admin_url( 'options-general.php?page=smart-theme-switcher' ),
+			__( 'Settings', 'smart-theme-switcher' )
 		);
 
 		array_unshift( $links, $settings_link );
@@ -94,7 +94,7 @@ class Admin {
 				'id'    => 'sts-preview',
 				'title' => sprintf(
 					/* translators: %s: Theme name */
-					__( 'Previewing: %s', 'easy-theme-switcher' ),
+					__( 'Previewing: %s', 'smart-theme-switcher' ),
 					$theme->get( 'Name' )
 				),
 				'href'  => '#',
@@ -108,7 +108,7 @@ class Admin {
 			$wp_admin_bar->add_node( array(
 				'id'     => 'sts-exit-preview',
 				'parent' => 'sts-preview',
-				'title'  => __( 'Exit Preview', 'easy-theme-switcher' ),
+				'title'  => __( 'Exit Preview', 'smart-theme-switcher' ),
 				'href'   => $current_url,
 				'meta'   => array(
 					'class' => 'sts-exit-preview-link',
@@ -122,7 +122,7 @@ class Admin {
 			$wp_admin_bar->add_node( array(
 				'id'     => 'sts-switch-theme',
 				'parent' => 'sts-preview',
-				'title'  => __( 'Switch Theme', 'easy-theme-switcher' ),
+				'title'  => __( 'Switch Theme', 'smart-theme-switcher' ),
 				'href'   => '#',
 			) );
 
