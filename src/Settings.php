@@ -257,8 +257,18 @@ class Settings {
 				$settings[ $key ] = $params[ $key ];
 			}
 		}
-		update_option( 'smart_theme_switcher_settings', $settings );
-		return rest_ensure_response( array( 'success' => true, 'settings' => $settings ) );
+		
+		// Sanitize the settings
+		$sanitized_settings = $this->sanitize_settings( $settings );
+		
+		// Update the settings
+		update_option( 'smart_theme_switcher_settings', $sanitized_settings );
+		
+		// Clear theme caches when settings are updated
+		$theme_switcher = new ThemeSwitcher();
+		$theme_switcher->clear_theme_caches();
+		
+		return rest_ensure_response( array( 'success' => true, 'settings' => $sanitized_settings ) );
 	}
 
 	/**
@@ -390,6 +400,10 @@ class Settings {
 
 		// Update settings in both locations for compatibility.
 		update_option( 'smart_theme_switcher_settings', $sanitized_settings );
+		
+		// Clear theme caches when settings are updated
+		$theme_switcher = new ThemeSwitcher();
+		$theme_switcher->clear_theme_caches();
 
 		// Send success response.
 		wp_send_json_success( array(

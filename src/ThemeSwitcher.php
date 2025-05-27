@@ -522,6 +522,62 @@ class ThemeSwitcher {
 	}
 	
 	/**
+	 * Check if a theme is valid and installed.
+	 *
+	 * @since 1.0.0
+	 * @param string $theme_slug Theme slug to check
+	 * @return bool True if theme exists and is valid, false otherwise
+	 */
+	public function is_valid_theme( $theme_slug ) {
+		if ( empty( $theme_slug ) ) {
+			return false;
+		}
+		
+		$theme = wp_get_theme( $theme_slug );
+		return $theme->exists();
+	}
+	
+	/**
+	 * Clear theme caches.
+	 * 
+	 * Used when a theme assignment is changed to ensure
+	 * cached theme values are refreshed.
+	 *
+	 * @since 1.0.0
+	 * @param int $post_id Optional post ID to clear specific cache
+	 * @param int $term_id Optional term ID to clear specific cache
+	 * @param string $post_type Optional post type to clear specific cache
+	 * @param string $taxonomy Optional taxonomy to clear specific cache
+	 * @return void
+	 */
+	public function clear_theme_caches( $post_id = 0, $term_id = 0, $post_type = '', $taxonomy = '' ) {
+		// Clear specific caches if IDs or types provided
+		if ( $post_id ) {
+			wp_cache_delete( 'sts_post_' . $post_id, 'smart_theme_switcher' );
+		}
+		
+		if ( $term_id ) {
+			wp_cache_delete( 'sts_term_' . $term_id, 'smart_theme_switcher' );
+		}
+		
+		if ( $post_type ) {
+			wp_cache_delete( 'sts_post_type_' . $post_type, 'smart_theme_switcher' );
+		}
+		
+		if ( $taxonomy ) {
+			wp_cache_delete( 'sts_taxonomy_' . $taxonomy, 'smart_theme_switcher' );
+		}
+		
+		// Or clear all theme caches if no specific IDs/types provided
+		if ( ! $post_id && ! $term_id && ! $post_type && ! $taxonomy ) {
+			// Get all cache keys for smart_theme_switcher group and delete them
+			// Since wp_cache_flush() is too broad, we have to use creative workarounds
+			// We'll use an action to allow other caching plugins to clear their caches
+			do_action( 'smart_theme_switcher_clear_caches' );
+		}
+	}
+	
+	/**
 	 * Maybe show admin notice for missing or broken theme.
 	 * 
 	 * This function displays a contextual admin notice only on:

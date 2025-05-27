@@ -102,9 +102,13 @@ class ThemeResolver {
 
 		$meta_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
 		if ( ! empty( $meta_theme ) ) {
-			// Cache the result
-			wp_cache_set( $cache_key, $meta_theme, 'smart_theme_switcher' );
-			return $meta_theme;
+			// Verify theme exists before using it
+			$theme_switcher = new \SmartThemeSwitcher\ThemeSwitcher();
+			if ( $theme_switcher->is_valid_theme( $meta_theme ) ) {
+				// Cache the result
+				wp_cache_set( $cache_key, $meta_theme, 'smart_theme_switcher' );
+				return $meta_theme;
+			}
 		}
 
 		// Cache the negative result (no theme set)
@@ -171,9 +175,14 @@ class ThemeResolver {
 			$this->settings['post_types'][ $post_type ]['theme'] !== 'use_active' &&
 			! empty( $this->settings['post_types'][ $post_type ]['theme'] )
 		) {
-			$theme = sanitize_text_field( $this->settings['post_types'][ $post_type ]['theme'] );
-			wp_cache_set( $cache_key, $theme, 'smart_theme_switcher' );
-			return $theme;
+			$theme_slug = sanitize_text_field( $this->settings['post_types'][ $post_type ]['theme'] );
+			
+			// Verify theme exists before using it
+			$theme_switcher = new \SmartThemeSwitcher\ThemeSwitcher();
+			if ( $theme_switcher->is_valid_theme( $theme_slug ) ) {
+				wp_cache_set( $cache_key, $theme_slug, 'smart_theme_switcher' );
+				return $theme_slug;
+			}
 		}
 		
 		// Cache the negative result
@@ -206,9 +215,13 @@ class ThemeResolver {
 			
 			$meta_theme = get_term_meta( $queried_object->term_id, 'smart_theme_switcher_active_theme', true );
 			if ( ! empty( $meta_theme ) ) {
-				// Cache the result
-				wp_cache_set( $cache_key, $meta_theme, 'smart_theme_switcher' );
-				return $meta_theme;
+				// Verify theme exists before using it
+				$theme_switcher = new \SmartThemeSwitcher\ThemeSwitcher();
+				if ( $theme_switcher->is_valid_theme( $meta_theme ) ) {
+					// Cache the result
+					wp_cache_set( $cache_key, $meta_theme, 'smart_theme_switcher' );
+					return $meta_theme;
+				}
 			}
 			
 			// Cache the negative result (no theme set)
@@ -228,7 +241,12 @@ class ThemeResolver {
 			$this->settings['taxonomies'][ $taxonomy ]['theme'] !== 'use_active' &&
 			! empty( $this->settings['taxonomies'][ $taxonomy ]['theme'] )
 		) {
-			return sanitize_text_field( $this->settings['taxonomies'][ $taxonomy ]['theme'] );
+			// Verify theme exists before using it
+			$theme_slug = sanitize_text_field( $this->settings['taxonomies'][ $taxonomy ]['theme'] );
+			$theme_switcher = new \SmartThemeSwitcher\ThemeSwitcher();
+			if ( $theme_switcher->is_valid_theme( $theme_slug ) ) {
+				return $theme_slug;
+			}
 		}
 
 		return false;
