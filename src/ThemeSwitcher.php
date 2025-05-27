@@ -76,6 +76,10 @@ class ThemeSwitcher {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
 		add_action( 'init', array( $this, 'register_post_meta' ) );
+		add_action( 'init', array( $this, 'register_term_meta' ) );
+		
+		// Admin notices
+		add_action( 'admin_notices', array( $this, 'maybe_show_theme_missing_notice' ) );
 	}
 
 	/**
@@ -472,6 +476,25 @@ class ThemeSwitcher {
 	}
 
 	/**
+	 * Register term meta for theme switching.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function register_term_meta() {
+		// Register meta for all public taxonomies.
+		foreach ( get_taxonomies( array( 'public' => true ) ) as $taxonomy ) {
+			register_term_meta( $taxonomy, 'smart_theme_switcher_active_theme', array(
+				'show_in_rest'      => true,
+				'single'            => true,
+				'type'              => 'string',
+				'auth_callback'     => function() { return current_user_can( 'edit_posts' ); },
+				'sanitize_callback' => 'sanitize_text_field',
+			) );
+		}
+	}
+
+	/**
 	 * Get query parameter name from settings.
 	 *
 	 * @since 1.0.0
@@ -496,5 +519,128 @@ class ThemeSwitcher {
 		}
 
 		return $theme_options;
+	}
+	
+	/**
+	 * Maybe show admin notice for missing or broken theme.
+	 * 
+	 * This function displays a contextual admin notice only on:
+	 * - The post edit screen where a theme is assigned but missing
+	 * - The taxonomy term edit screen where a theme is assigned but missing
+	 * - The plugin settings page
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function maybe_show_theme_missing_notice() {
+		global $pagenow, $post, $tag;
+		
+		// Only show notices to users who can edit themes
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			return;
+		}
+		
+		$screen = get_current_screen();
+		$missing_theme = false;
+		$context = '';
+		
+		// Check post edit screen
+		if ( 'post.php' === $pagenow && $post && isset( $_GET['action'] ) && 'edit' === $_GET['action'] ) {
+			$theme_slug = get_post_meta( $post->ID, 'smart_theme_switcher_active_theme', true );
+			if ( ! empty( $theme_slug ) ) {
+				$theme = wp_get_theme( $theme_slug );
+				if ( ! $theme->exists() ) {
+					$missing_theme = $theme_slug;
+					$context = sprintf( 
+						__( 'the post "%s"', 'smart-theme-switcher' ),
+						get_the_title( $post->ID )
+					);
+				}
+			}
+		}
+		
+		// Check term edit screen
+		if ( 'term.php' === $pagenow && isset( $_GET['tag_ID'] ) ) {
+			$term_id = absint( $_GET['tag_ID'] );
+			$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_key( $_GET['taxonomy'] ) : '';
+			
+			if ( $term_id && $taxonomy ) {
+				$theme_slug = get_term_meta( $term_id, 'smart_theme_switcher_active_theme', true );
+				if ( ! empty( $theme_slug ) ) {
+					$theme = wp_get_theme( $theme_slug );
+					if ( ! $theme->exists() ) {
+						$missing_theme = $theme_slug;
+						$term = get_term( $term_id, $taxonomy );
+						$context = sprintf( 
+							__( 'the term "%s"', 'smart-theme-switcher' ),
+							$term->name
+						);
+					}
+				}
+			}
+		}
+		
+		// Check settings page
+		if ( isset( $screen->id ) && 'settings_page_smart-theme-switcher' === $screen->id ) {
+			// Check post type settings
+			$settings = get_option( 'smart_theme_switcher_settings', array() );
+			
+			if ( isset( $settings['post_types'] ) && is_array( $settings['post_types'] ) ) {
+				foreach ( $settings['post_types'] as $post_type => $post_type_settings ) {
+					if ( 
+						isset( $post_type_settings['enabled'] ) && 
+						$post_type_settings['enabled'] && 
+						isset( $post_type_settings['theme'] ) && 
+						! empty( $post_type_settings['theme'] ) 
+					) {
+						$theme = wp_get_theme( $post_type_settings['theme'] );
+						if ( ! $theme->exists() ) {
+							$missing_theme = $post_type_settings['theme'];
+							$post_type_obj = get_post_type_object( $post_type );
+							$context = sprintf( 
+								__( 'all "%s" post types', 'smart-theme-switcher' ),
+								$post_type_obj ? $post_type_obj->labels->name : $post_type
+							);
+							break;
+						}
+					}
+				}
+			}
+			
+			// Check taxonomy settings
+			if ( ! $missing_theme && isset( $settings['taxonomies'] ) && is_array( $settings['taxonomies'] ) ) {
+				foreach ( $settings['taxonomies'] as $taxonomy => $taxonomy_settings ) {
+					if ( 
+						isset( $taxonomy_settings['enabled'] ) && 
+						$taxonomy_settings['enabled'] && 
+						isset( $taxonomy_settings['theme'] ) && 
+						! empty( $taxonomy_settings['theme'] ) 
+					) {
+						$theme = wp_get_theme( $taxonomy_settings['theme'] );
+						if ( ! $theme->exists() ) {
+							$missing_theme = $taxonomy_settings['theme'];
+							$taxonomy_obj = get_taxonomy( $taxonomy );
+							$context = sprintf( 
+								__( 'all "%s" taxonomy archives', 'smart-theme-switcher' ),
+								$taxonomy_obj ? $taxonomy_obj->labels->name : $taxonomy
+							);
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		// Display notice if needed
+		if ( $missing_theme && $context ) {
+			$notice = sprintf(
+				/* translators: 1: Theme name, 2: Context where theme is assigned */
+				__( '<strong>Warning:</strong> The theme "%1$s" is assigned to %2$s but is not installed or is broken. The default theme will be used instead.', 'smart-theme-switcher' ),
+				esc_html( $missing_theme ),
+				esc_html( $context )
+			);
+			
+			echo '<div class="notice notice-warning is-dismissible"><p>' . $notice . '</p></div>';
+		}
 	}
 }
