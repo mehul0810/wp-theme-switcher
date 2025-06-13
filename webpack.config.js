@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
   ...defaultConfig,
   entry: {
-    'individual': path.resolve(process.cwd(), 'assets/src/js', 'editor.js'),
+    'individual': path.resolve(process.cwd(), 'assets/src/js', 'individual.js'),
     'preview-banner': path.resolve(process.cwd(), 'assets/src/js', 'preview-banner.js'),
     'preview': path.resolve(process.cwd(), 'assets/src/js', 'preview.js'),
     'settings': path.resolve(process.cwd(), 'assets/src/js', 'settings.js'),

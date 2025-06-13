@@ -303,22 +303,39 @@ class ThemeSwitcher {
 		}
 		
 		$theme = wp_get_theme( $assigned_theme );
-		if ( $theme->exists() ) {
-			$template_file = basename( $template );
-			$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
-			
-			if ( file_exists( $theme_template ) ) {
-				return $theme_template;
-			}
-			
-			// Fallback to theme index.php if template file missing
-			$theme_index = $theme->get_stylesheet_directory() . '/index.php';
-			if ( file_exists( $theme_index ) ) {
-				return $theme_index;
-			}
+
+		// Validate theme
+		if ( ! $theme->exists() ) {
+			return $template;
 		}
-		
-		// If assigned theme is invalid, fallback to default template
+
+		// Handle block (FSE) themes
+		if ( wp_is_block_theme( $theme->get_stylesheet() ) ) {
+			// Avoid infinite switching loop
+			if ( get_stylesheet() !== $theme->get_stylesheet() ) {
+				switch_theme( $theme->get_stylesheet() );
+			}
+			// Let WordPress resolve the block templates naturally
+			return $template;
+		}
+
+		// Classic theme template logic
+		$template_file     = basename( $template );
+		$theme_dir         = $theme->get_stylesheet_directory();
+		$theme_template    = trailingslashit( $theme_dir ) . $template_file;
+		$theme_index       = trailingslashit( $theme_dir ) . 'index.php';
+
+		// Return custom theme template if it exists
+		if ( file_exists( $theme_template ) ) {
+			return $theme_template;
+		}
+
+		// Fallback to index.php of assigned theme
+		if ( file_exists( $theme_index ) ) {
+			return $theme_index;
+		}
+
+		// Final fallback to original template
 		return $template;
 	}
 
@@ -369,7 +386,7 @@ class ThemeSwitcher {
 		// Enqueue preview CSS
 		wp_enqueue_style(
 			'sts-preview',
-			STS_PLUGIN_URL . 'assets/dist/sts-preview.css',
+			STS_PLUGIN_URL . 'assets/dist/preview.css',
 			array(),
 			STS_PLUGIN_VERSION
 		);
