@@ -20,31 +20,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Plugin {
 
-	/**
-	 * Singleton instance of the class.
-	 *
-	 * @since 1.0.0
-	 * @var Plugin
-	 */
-	private static $instance;
+	public function register() {
+		// Setup plugin constants.
+		$this->setup();
 
-	/**
-	 * Main Plugin Instance.
-	 *
-	 * Ensures only one instance of Plugin is loaded or can be loaded.
-	 *
-	 * @since 1.0.0
-	 * @return Plugin - Main instance.
-	 */
-	public static function instance() {
-		if ( ! isset( self::$instance ) && ! ( self::$instance instanceof Plugin ) ) {
-			self::$instance = new Plugin();
-			self::$instance->setup();
-			self::$instance->init();
-			self::$instance->hooks();
-		}
+		// Register services used throughout the plugin.
+		add_action( 'plugins_loaded', array( $this, 'register_services' ) );
 
-		return self::$instance;
+		add_action( 'rest_api_init', function() {
+			// Register REST API routes.
+			(new Settings())->register_rest_routes();
+		} );
+
+		// Load text domain.
+		add_action( 'init', array( $this, 'load_textdomain' ) );
 	}
 
 	/**
@@ -67,10 +56,10 @@ final class Plugin {
 	 * @since 1.0.0
 	 * @return void
 	 */
-	private function init() {
+	public function register_services() {
 		// Initialize core components.
 		new ThemeSwitcher();
-		new Settings();
+		// new Settings();
 		
 		// Initialize admin components if in admin area.
 		if ( is_admin() ) {
@@ -81,17 +70,6 @@ final class Plugin {
 		// Initialize frontend components.
 		new Frontend\Frontend();
 		new Frontend\PreviewBanner();
-	}
-
-	/**
-	 * Setup hooks.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function hooks() {
-		// Load text domain.
-		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 	}
 
 	/**

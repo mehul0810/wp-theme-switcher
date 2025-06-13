@@ -59,7 +59,7 @@ class Settings {
 			'smart_theme_switcher_settings',
 			array(
 				'sanitize_callback' => array( $this, 'sanitize_settings' ),
-				'show_in_rest'      => false,
+				'show_in_rest'      => true,
 			)
 		);
 	}
@@ -78,12 +78,12 @@ class Settings {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'rest_get_settings' ),
-					'permission_callback' => array( $this, 'rest_permission_check' ),
+					'permission_callback' => array( $this, 'rest_permission_check_read' ),
 				),
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'rest_update_settings' ),
-					'permission_callback' => array( $this, 'rest_permission_check' ),
+					'permission_callback' => array( $this, 'rest_permission_check_manage' ),
 					'args'                => array(
 						'post_types' => array(
 							'type'        => 'object',
@@ -108,7 +108,7 @@ class Settings {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'rest_get_post_types' ),
-				'permission_callback' => array( $this, 'rest_permission_check' ),
+				'permission_callback' => array( $this, 'rest_permission_check_read' ),
 			)
 		);
 
@@ -118,7 +118,7 @@ class Settings {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'rest_get_taxonomies' ),
-				'permission_callback' => array( $this, 'rest_permission_check' ),
+				'permission_callback' => array( $this, 'rest_permission_check_read' ),
 			)
 		);
 
@@ -128,7 +128,7 @@ class Settings {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'rest_get_themes' ),
-				'permission_callback' => array( $this, 'rest_permission_check' ),
+				'permission_callback' => array( $this, 'rest_permission_check_read' ),
 			)
 		);
 	}
@@ -140,6 +140,26 @@ class Settings {
 	 * @return bool
 	 */
 	public function rest_permission_check() {
+		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Permission callback for REST API endpoints that require read capabilities.
+	 *
+	 * @since 1.0.0
+	 * @return bool
+	 */
+	public function rest_permission_check_read() {
+		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Permission callback for REST API endpoints that require management capabilities.
+	 *
+	 * @since 1.0.0
+	 * @return bool
+	 */
+	public function rest_permission_check_manage() {
 		return current_user_can( 'manage_options' );
 	}
 

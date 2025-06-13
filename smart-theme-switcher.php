@@ -25,6 +25,8 @@
  * along with Smart Theme Switcher. If not, see <https://www.gnu.org/licenses/>.
  */
 
+namespace SmartThemeSwitcher;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -82,15 +84,6 @@ if ( file_exists( STS_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 	} );
 }
 
-// Backward compatibility for non-namespaced code.
-class_alias( 'SmartThemeSwitcher\\Plugin', 'Smart_Theme_Switcher' );
-
-/**
- * Returns the main instance of Smart_Theme_Switcher.
- *
- * @since 1.0.0
- * @return \SmartThemeSwitcher\Plugin
- */
-add_action( 'plugins_loaded', function() {
-	return \SmartThemeSwitcher\Plugin::instance();
-});
+// Initialize the plugin.
+$init_plugin = new Plugin();
+$init_plugin->register();
