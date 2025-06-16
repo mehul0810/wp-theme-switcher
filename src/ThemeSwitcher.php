@@ -85,11 +85,7 @@ class ThemeSwitcher {
 	}
 
 	public function add_preview_theme_param_to_preview_link( $preview_link, $post ) {
-		echo $preview_link;
-		echo "<pre>";
-		print_r( $post );
-		echo "</pre>";
-		exit("cvcvcvcvc");
+		
 		$preview_theme = $this->get_preview_theme_for_post( $post->ID );
 
 		if ( $preview_theme ) {
@@ -101,8 +97,7 @@ class ThemeSwitcher {
 	}
 
 	public function get_preview_theme_for_post( $post_id ) {
-		echo $post_id;
-		exit("cvcvc");
+		
 		$theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
 		if ( $theme ) {
 			return $theme;
