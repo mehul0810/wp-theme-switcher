@@ -53,7 +53,7 @@ class PreviewBanner {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		
 		// Output preview banner in footer
-		add_action( 'wp_footer', array( $this, 'output_preview_banner' ) );
+		//add_action( 'wp_footer', array( $this, 'output_preview_banner' ) );
 		
 		// AJAX handler for switching themes
 		add_action( 'wp_ajax_sts_switch_theme', array( $this, 'ajax_switch_theme' ) );
@@ -229,7 +229,7 @@ class PreviewBanner {
 		
 		// Output the banner
 		?>
-		<div id="sts-preview-banner" class="sts-preview-banner" role="complementary" aria-label="<?php esc_attr_e( 'Theme Preview Controls', 'smart-theme-switcher' ); ?>">
+		<div id="sts-preview-banner" class="sts-preview-banner other" role="complementary" aria-label="<?php esc_attr_e( 'Theme Preview Controls', 'smart-theme-switcher' ); ?>">
 			<div class="sts-preview-banner-inner">
 				<span class="sts-preview-label"><?php esc_html_e( 'Previewing:', 'smart-theme-switcher' ); ?></span>
 				<strong class="sts-preview-theme-name"><?php echo esc_html( $current_theme_name ); ?></strong>

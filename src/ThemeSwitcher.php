@@ -80,6 +80,40 @@ class ThemeSwitcher {
 		
 		// Admin notices
 		add_action( 'admin_notices', array( $this, 'maybe_show_theme_missing_notice' ) );
+
+		add_filter( 'preview_post_link', [ $this, 'add_preview_theme_param_to_preview_link' ], 10, 2 );
+	}
+
+	public function add_preview_theme_param_to_preview_link( $preview_link, $post ) {
+		echo $preview_link;
+		echo "<pre>";
+		print_r( $post );
+		echo "</pre>";
+		exit("cvcvcvcvc");
+		$preview_theme = $this->get_preview_theme_for_post( $post->ID );
+
+		if ( $preview_theme ) {
+			$query_param = $this->get_query_param_name();
+			$preview_link = add_query_arg( $query_param, $preview_theme, $preview_link );
+		}
+
+		return $preview_link;
+	}
+
+	public function get_preview_theme_for_post( $post_id ) {
+		echo $post_id;
+		exit("cvcvc");
+		$theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+		if ( $theme ) {
+			return $theme;
+		}
+
+		$plugin_settings = get_option( 'smart_theme_switcher_settings', [] );
+		if ( ! empty( $plugin_settings['default_theme'] ) ) {
+			return $plugin_settings['default_theme'];
+		}
+
+		return get_stylesheet(); // fallback
 	}
 
 	/**

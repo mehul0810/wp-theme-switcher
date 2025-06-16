@@ -77,11 +77,9 @@ class Frontend {
 		$themes = $theme_switcher->get_available_themes();
 		
 		// Get current URL without query parameters.
-		$current_url = remove_query_arg( $theme_switcher->get_query_param_name() );
-		
-		// Output banner.
+		$current_url = remove_query_arg( $theme_switcher->get_query_param_name() ); 
 		?>
-		<div id="sts-preview-banner" class="sts-preview-banner">
+		<div id="sts-preview-banner" class="sts-preview-banner frontend">
 			<div class="sts-preview-banner-inner">
 				<div class="sts-preview-info">
 					<span class="sts-preview-label"><?php esc_html_e( 'Preview Mode:', 'smart-theme-switcher' ); ?></span>
