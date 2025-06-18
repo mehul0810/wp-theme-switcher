@@ -87,7 +87,7 @@ class ThemeSwitcher {
 	public function add_preview_theme_param_to_preview_link( $preview_link, $post ) {
 		
 		$preview_theme = $this->get_preview_theme_for_post( $post->ID );
-
+		// exit("teee");
 		if ( $preview_theme ) {
 			$query_param = $this->get_query_param_name();
 			$preview_link = add_query_arg( $query_param, $preview_theme, $preview_link );
@@ -97,18 +97,15 @@ class ThemeSwitcher {
 	}
 
 	public function get_preview_theme_for_post( $post_id ) {
-		
+		// 1. Check for theme set in post meta
 		$theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
-		if ( $theme ) {
+	
+		if ( ! empty( $theme ) ) {
 			return $theme;
 		}
 
-		$plugin_settings = get_option( 'smart_theme_switcher_settings', [] );
-		if ( ! empty( $plugin_settings['default_theme'] ) ) {
-			return $plugin_settings['default_theme'];
-		}
-
-		return get_stylesheet(); // fallback
+		// 2. Fallback to currently active theme
+		return get_stylesheet();
 	}
 
 	/**
@@ -321,7 +318,7 @@ class ThemeSwitcher {
 	 */
 	public function set_theme_template_include( $template ) {
 		// Skip if we're in preview mode - that takes precedence
-		if ( $this->get_preview_theme() ) {
+		if ( $this->get_preview_theme() ) { 
 			return $template;
 		}
 		
@@ -332,16 +329,17 @@ class ThemeSwitcher {
 		}
 		
 		$theme = wp_get_theme( $assigned_theme );
-
+	
 		// Validate theme
 		if ( ! $theme->exists() ) {
 			return $template;
 		}
-
+		
 		// Handle block (FSE) themes
 		if ( wp_is_block_theme( $theme->get_stylesheet() ) ) {
+			
 			// Avoid infinite switching loop
-			if ( get_stylesheet() !== $theme->get_stylesheet() ) {
+			if ( get_option( 'stylesheet' ) !== $theme->get_stylesheet() ) {
 				switch_theme( $theme->get_stylesheet() );
 			}
 			// Let WordPress resolve the block templates naturally
