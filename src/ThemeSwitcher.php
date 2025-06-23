@@ -61,15 +61,12 @@ class ThemeSwitcher {
 	 * @return void
 	 */
 	private function init_hooks() {
-		// Theme Set Mode hooks (affects all users)
-		add_filter( 'template', array( $this, 'set_theme_template' ) );
-		add_filter( 'stylesheet', array( $this, 'set_theme_stylesheet' ) );
-		add_filter( 'template_include', array( $this, 'set_theme_template_include' ), 999 );
 		
-		// Preview Mode hooks (admin-only)
-		add_filter( 'template', array( $this, 'preview_theme_template' ) );
-		add_filter( 'stylesheet', array( $this, 'preview_theme_stylesheet' ) );
-		add_filter( 'template_include', array( $this, 'preview_theme_template_include' ), 1000 );
+		// Theme Set Mode hooks (affects all users)
+		add_filter( 'template', [ $this, 'resolve_template' ] );
+		add_filter( 'stylesheet', [ $this, 'resolve_stylesheet' ] );
+		
+		//add_filter( 'template_include', array( $this, 'preview_theme_template_include' ), 1000 );
 		add_filter( 'body_class', array( $this, 'add_preview_body_class' ) );
 		
 		// General hooks (for both modes)
@@ -170,202 +167,99 @@ class ThemeSwitcher {
 			is_user_logged_in() && current_user_can( 'edit_posts' )
 		);
 	}
-
-	/**
-	 * Filter the theme template for Preview Mode (admin only).
-	 * 
-	 * This filter is only applied for authorized users in preview mode.
-	 * It never affects visitors or SEO.
-	 *
-	 * @since 1.0.0
-	 * @param string $template Current theme template.
-	 * @return string New theme template or unchanged if not in preview mode.
-	 */
-	public function preview_theme_template( $template ) {
-		// Check if we're in preview mode (admin only)
-		$preview_theme = $this->get_preview_theme();
-		if ( $preview_theme ) {
-			$theme = wp_get_theme( $preview_theme );
-			if ( $theme->exists() ) {
-				return $theme->get_template();
-			}
-		}
-		return $template;
-	}
 	
 	/**
+	 * 
+	 * Filter the theme template if Preview Mode (admin only).
+	 * 
 	 * Filter the theme template for Theme Set Mode (all users).
 	 * 
-	 * This filter applies to all visitors and affects SEO.
-	 * It uses the theme set for individual posts, post types, or taxonomies.
-	 *
-	 * @since 1.0.0
-	 * @param string $template Current theme template.
-	 * @return string New theme template or unchanged if no theme is set.
+	 * @param mixed $template
 	 */
-	public function set_theme_template( $template ) {
-		// Skip if we're in preview mode - that takes precedence
-		if ( $this->get_preview_theme() ) {
-			return $template;
-		}
+	public function resolve_template( $template ) {
+		$theme_slug = $this->get_preview_theme();
 		
-		// Get theme set for the current post/archive (visible to all users)
-		$assigned_theme = $this->get_assigned_theme();
-		if ( $assigned_theme ) {
-			$theme = wp_get_theme( $assigned_theme );
+		// If not in preview mode, fall back to assigned theme
+		if ( ! $theme_slug ) {
+			$theme_slug = $this->get_assigned_theme();
+		}
+
+		if ( $theme_slug ) {
+			$theme = \wp_get_theme( $theme_slug );
+			// echo "<pre>";
+			// print_r($theme);
+			//exit("vcccvc");
 			if ( $theme->exists() ) {
-				return $theme->get_template();
+				//echo "inside";
+				$template_slug = $theme->get_template(); // Parent theme
+				//echo "<br/>";
+				$stylesheet_slug = $theme->get_stylesheet(); // Actual (could be child)
+				//echo "<br/>";
+				// For FSE child themes like 'ollie-child', return its own template
+				//echo "template_slug = ".$template_slug;
+				//echo "stylesheet_slug = ".$stylesheet_slug;
+				if ( $template_slug === $stylesheet_slug ) {
+					return $template_slug;
+				}
+				//exit("xvcxvc");
+
+				// If it's a block (FSE) child theme but has its own theme.json or index.html, allow it
+				$child_theme_dir = get_theme_root() . '/' . $stylesheet_slug;
+				//ßecho "<br/>";
+				if (
+					file_exists( $child_theme_dir . '/theme.json' )
+					//file_exists( $child_theme_dir . '/templates/index.html' )
+				) {
+					//echo "file_exists = ".$stylesheet_slug;
+					//echo "<br/>";
+					//return "ollie-child";
+					return $stylesheet_slug;
+				}
+
+				// Fallback to parent if child missing required FSE files
+				//return "ollie-child";
+				return $template_slug;
 			}
 		}
+
 		return $template;
 	}
 
-	/**
-	 * Filter the theme stylesheet for Preview Mode (admin only).
-	 * 
-	 * This filter is only applied for authorized users in preview mode.
-	 * It never affects visitors or SEO.
-	 *
-	 * @since 1.0.0
-	 * @param string $stylesheet Current theme stylesheet.
-	 * @return string New theme stylesheet or unchanged if not in preview mode.
-	 */
-	public function preview_theme_stylesheet( $stylesheet ) {
-		// Check if we're in preview mode (admin only)
-		$preview_theme = $this->get_preview_theme();
-		if ( $preview_theme ) {
-			$theme = wp_get_theme( $preview_theme );
+	public function resolve_stylesheet( $stylesheet ) {
+		$theme_slug = $this->get_preview_theme();
+
+		// If not in preview mode, fall back to assigned theme
+		if ( ! $theme_slug ) {
+			$theme_slug = $this->get_assigned_theme();
+		}
+
+		if ( $theme_slug ) {
+			$theme = wp_get_theme( $theme_slug );
 			if ( $theme->exists() ) {
+				//echo "styleshhet_slug = ". $theme->get_stylesheet();
 				return $theme->get_stylesheet();
 			}
 		}
-		return $stylesheet;
-	}
-	
-	/**
-	 * Filter the theme stylesheet for Theme Set Mode (all users).
-	 * 
-	 * This filter applies to all visitors and affects SEO.
-	 * It uses the theme set for individual posts, post types, or taxonomies.
-	 *
-	 * @since 1.0.0
-	 * @param string $stylesheet Current theme stylesheet.
-	 * @return string New theme stylesheet or unchanged if no theme is set.
-	 */
-	public function set_theme_stylesheet( $stylesheet ) {
-		// Skip if we're in preview mode - that takes precedence
-		if ( $this->get_preview_theme() ) {
-			return $stylesheet;
-		}
-		
-		// Get theme set for the current post/archive (visible to all users)
-		$assigned_theme = $this->get_assigned_theme();
-		if ( $assigned_theme ) {
-			$theme = wp_get_theme( $assigned_theme );
-			if ( $theme->exists() ) {
-				return $theme->get_stylesheet();
-			}
-		}
+		//return "ollie-child";
 		return $stylesheet;
 	}
 
-	/**
-	 * Filter template include for Preview Mode (admin only).
-	 *
-	 * This filter is only applied for authorized users in preview mode.
-	 * It never affects visitors or SEO.
-	 *
-	 * @since 1.0.0
-	 * @param string $template The path of the template to include.
-	 * @return string The path of the template to include.
-	 */
-	public function preview_theme_template_include( $template ) {
-		// Only proceed if we're in preview mode (admin only)
-		$preview_theme = $this->get_preview_theme();
-		if ( ! $preview_theme ) {
-			return $template;
+	protected function resolve_theme_slug() {
+		$theme_slug = $this->get_preview_theme();
+
+		if ( ! $theme_slug ) {
+			$theme_slug = $this->get_assigned_theme();
 		}
-		
-		$theme = wp_get_theme( $preview_theme );
-		if ( $theme->exists() ) {
-			$template_file = basename( $template );
-			$theme_template = $theme->get_stylesheet_directory() . '/' . $template_file;
-			
-			if ( file_exists( $theme_template ) ) {
-				return $theme_template;
-			}
-			
-			// Fallback to theme index.php if template file missing
-			$theme_index = $theme->get_stylesheet_directory() . '/index.php';
-			if ( file_exists( $theme_index ) ) {
-				return $theme_index;
-			}
+
+		$theme = $theme_slug ? wp_get_theme( $theme_slug ) : false;
+
+		if ( $theme && $theme->exists() ) {
+			return $theme;
 		}
-		
-		// If preview theme is invalid, fallback to default template
-		return $template;
+
+		return false;
 	}
 	
-	/**
-	 * Filter template include for Theme Set Mode (all users).
-	 *
-	 * This filter applies to all visitors and affects SEO.
-	 * It uses the theme set for individual posts, post types, or taxonomies.
-	 *
-	 * @since 1.0.0
-	 * @param string $template The path of the template to include.
-	 * @return string The path of the template to include.
-	 */
-	public function set_theme_template_include( $template ) {
-		// Skip if we're in preview mode - that takes precedence
-		if ( $this->get_preview_theme() ) { 
-			return $template;
-		}
-		
-		// Get theme set for the current post/archive (visible to all users)
-		$assigned_theme = $this->get_assigned_theme();
-		if ( ! $assigned_theme ) {
-			return $template;
-		}
-		
-		$theme = wp_get_theme( $assigned_theme );
-	
-		// Validate theme
-		if ( ! $theme->exists() ) {
-			return $template;
-		}
-		
-		// Handle block (FSE) themes
-		if ( wp_is_block_theme( $theme->get_stylesheet() ) ) {
-			
-			// Avoid infinite switching loop
-			if ( get_option( 'stylesheet' ) !== $theme->get_stylesheet() ) {
-				switch_theme( $theme->get_stylesheet() );
-			}
-			// Let WordPress resolve the block templates naturally
-			return $template;
-		}
-
-		// Classic theme template logic
-		$template_file     = basename( $template );
-		$theme_dir         = $theme->get_stylesheet_directory();
-		$theme_template    = trailingslashit( $theme_dir ) . $template_file;
-		$theme_index       = trailingslashit( $theme_dir ) . 'index.php';
-
-		// Return custom theme template if it exists
-		if ( file_exists( $theme_template ) ) {
-			return $theme_template;
-		}
-
-		// Fallback to index.php of assigned theme
-		if ( file_exists( $theme_index ) ) {
-			return $theme_index;
-		}
-
-		// Final fallback to original template
-		return $template;
-	}
-
 	/**
 	 * Add body class for Preview Mode (admin only).
 	 *
