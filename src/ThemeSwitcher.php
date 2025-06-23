@@ -66,7 +66,6 @@ class ThemeSwitcher {
 		add_filter( 'template', [ $this, 'resolve_template' ] );
 		add_filter( 'stylesheet', [ $this, 'resolve_stylesheet' ] );
 		
-		//add_filter( 'template_include', array( $this, 'preview_theme_template_include' ), 1000 );
 		add_filter( 'body_class', array( $this, 'add_preview_body_class' ) );
 		
 		// General hooks (for both modes)
@@ -167,7 +166,7 @@ class ThemeSwitcher {
 			is_user_logged_in() && current_user_can( 'edit_posts' )
 		);
 	}
-	
+
 	/**
 	 * 
 	 * Filter the theme template if Preview Mode (admin only).
@@ -242,22 +241,6 @@ class ThemeSwitcher {
 		}
 		//return "ollie-child";
 		return $stylesheet;
-	}
-
-	protected function resolve_theme_slug() {
-		$theme_slug = $this->get_preview_theme();
-
-		if ( ! $theme_slug ) {
-			$theme_slug = $this->get_assigned_theme();
-		}
-
-		$theme = $theme_slug ? wp_get_theme( $theme_slug ) : false;
-
-		if ( $theme && $theme->exists() ) {
-			return $theme;
-		}
-
-		return false;
 	}
 	
 	/**
