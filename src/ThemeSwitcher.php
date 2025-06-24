@@ -61,10 +61,17 @@ class ThemeSwitcher {
 	 * @return void
 	 */
 	private function init_hooks() {
+		// add_filter( 'template', [ $this, 'resolve_template' ] );
+		// add_filter( 'stylesheet', [ $this, 'resolve_stylesheet' ] );
 		
+		add_filter( 'template', function( $template ) {
+			return ThemeSwitcher::resolve_theme_filter( $template, 'template' );
+		} );
+		add_filter( 'stylesheet', function( $stylesheet ) {
+			return ThemeSwitcher::resolve_theme_filter( $stylesheet, 'stylesheet' );
+		} );
+
 		// Theme Set Mode hooks (affects all users)
-		add_filter( 'template', [ $this, 'resolve_template' ] );
-		add_filter( 'stylesheet', [ $this, 'resolve_stylesheet' ] );
 		
 		add_filter( 'body_class', array( $this, 'add_preview_body_class' ) );
 		
@@ -78,6 +85,63 @@ class ThemeSwitcher {
 		add_action( 'admin_notices', array( $this, 'maybe_show_theme_missing_notice' ) );
 
 		add_filter( 'preview_post_link', [ $this, 'add_preview_theme_param_to_preview_link' ], 10, 2 );
+	}
+
+	public static function resolve_theme_filter( $current_value, $which ) {
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$themes   = array_keys( wp_get_themes() );
+
+		$post_id = self::get_post_id_early();
+		$post_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+
+		$theme_slug = false;
+
+		if ( ! empty( $post_theme ) && in_array( $post_theme, $themes, true ) ) {
+			$theme_slug = $post_theme;
+		} elseif ( ! empty( $settings['post_types'] ) ) {
+			foreach ( $settings['post_types'] as $setting ) {
+				if ( ! empty( $setting['theme'] ) && in_array( $setting['theme'], $themes, true ) ) {
+					$theme_slug = $setting['theme'];
+					break;
+				}
+			}
+		}
+
+		if ( ! $theme_slug ) {
+			return $current_value;
+		}
+
+		$theme = wp_get_theme( $theme_slug );
+		if ( ! $theme->exists() ) {
+			return $current_value;
+		}
+
+		// Log for debugging
+		error_log("STS: $which | post_id: $post_id | theme_slug: $theme_slug | template: ".$theme->get_template()." | stylesheet: ".$theme->get_stylesheet());
+
+		return ( $which === 'template' )
+			? $theme->get_template()
+			: $theme->get_stylesheet();
+	}
+
+	public static function get_post_id_early() {
+		// Try ?p=ID for plain permalinks
+		if ( isset($_GET['p']) && is_numeric($_GET['p']) ) {
+			return (int) $_GET['p'];
+		}
+		// Pretty permalinks: Try to extract the slug from the URL and find the post
+		$request_uri = $_SERVER['REQUEST_URI'];
+		$path = trim(parse_url($request_uri, PHP_URL_PATH), '/');
+		if ( $path ) {
+			// Assumes /post-slug or /category/post-slug format, not 100% bulletproof!
+			$parts = explode('/', $path);
+			$slug = end($parts);
+			$post = get_page_by_path($slug, OBJECT, get_post_types(['public' => true]));
+			if ( $post ) {
+				return $post->ID;
+			}
+		}
+		return 0;
 	}
 
 	public function add_preview_theme_param_to_preview_link( $preview_link, $post ) {
@@ -176,71 +240,58 @@ class ThemeSwitcher {
 	 * @param mixed $template
 	 */
 	public function resolve_template( $template ) {
-		$theme_slug = $this->get_preview_theme();
-		
-		// If not in preview mode, fall back to assigned theme
-		if ( ! $theme_slug ) {
-			$theme_slug = $this->get_assigned_theme();
-		}
+		$new_template = $this->get_selected_theme( 'template' );
 
-		if ( $theme_slug ) {
-			$theme = \wp_get_theme( $theme_slug );
-			// echo "<pre>";
-			// print_r($theme);
-			//exit("vcccvc");
-			if ( $theme->exists() ) {
-				//echo "inside";
-				$template_slug = $theme->get_template(); // Parent theme
-				//echo "<br/>";
-				$stylesheet_slug = $theme->get_stylesheet(); // Actual (could be child)
-				//echo "<br/>";
-				// For FSE child themes like 'ollie-child', return its own template
-				//echo "template_slug = ".$template_slug;
-				//echo "stylesheet_slug = ".$stylesheet_slug;
-				if ( $template_slug === $stylesheet_slug ) {
-					return $template_slug;
-				}
-				//exit("xvcxvc");
-
-				// If it's a block (FSE) child theme but has its own theme.json or index.html, allow it
-				$child_theme_dir = get_theme_root() . '/' . $stylesheet_slug;
-				//ßecho "<br/>";
-				if (
-					file_exists( $child_theme_dir . '/theme.json' )
-					//file_exists( $child_theme_dir . '/templates/index.html' )
-				) {
-					//echo "file_exists = ".$stylesheet_slug;
-					//echo "<br/>";
-					//return "ollie-child";
-					return $stylesheet_slug;
-				}
-
-				// Fallback to parent if child missing required FSE files
-				//return "ollie-child";
-				return $template_slug;
-			}
+		if ( ! empty( $new_template ) ) {
+			return $new_template;
 		}
 
 		return $template;
 	}
 
 	public function resolve_stylesheet( $stylesheet ) {
-		$theme_slug = $this->get_preview_theme();
-
-		// If not in preview mode, fall back to assigned theme
-		if ( ! $theme_slug ) {
-			$theme_slug = $this->get_assigned_theme();
+		$new_stylesheet = $this->get_selected_theme( 'stylesheet' );
+		if ( ! empty( $new_stylesheet ) ) {
+			return $new_stylesheet;
 		}
+		return $stylesheet;
+	}
 
-		if ( $theme_slug ) {
-			$theme = wp_get_theme( $theme_slug );
-			if ( $theme->exists() ) {
-				//echo "styleshhet_slug = ". $theme->get_stylesheet();
-				return $theme->get_stylesheet();
+	public function get_selected_theme( $called_filter ) {
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$themes   = array_keys( wp_get_themes() );
+
+		$post_id = get_queried_object_id();
+		$post_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+
+		$theme_slug = false;
+
+		if ( ! empty( $post_theme ) && in_array( $post_theme, $themes, true ) ) {
+			$theme_slug = $post_theme;
+		} elseif ( ! empty( $settings['post_types'] ) ) {
+			foreach ( $settings['post_types'] as $setting ) {
+				if ( ! empty( $setting['theme'] ) && in_array( $setting['theme'], $themes, true ) ) {
+					$theme_slug = $setting['theme'];
+					break;
+				}
 			}
 		}
-		//return "ollie-child";
-		return $stylesheet;
+
+		if ( ! $theme_slug ) {
+			return $current_value;
+		}
+
+		$theme = wp_get_theme( $theme_slug );
+		if ( ! $theme->exists() ) {
+			return $current_value;
+		}
+
+		
+		if ( $called_filter === 'template' ) {
+			return $theme->get_template();   // Always parent slug
+		} elseif ( $called_filter === 'stylesheet' ) {
+			return $theme->get_stylesheet(); // Child or parent slug
+		}
 	}
 	
 	/**
