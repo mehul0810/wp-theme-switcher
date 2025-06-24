@@ -41,6 +41,15 @@ class ThemeSwitcher {
 	 */
 	private $theme_resolver;
 
+	private static $instance = null;
+
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
 	/**
 	 * Constructor.
 	 *
@@ -71,23 +80,7 @@ class ThemeSwitcher {
 			return ThemeSwitcher::resolve_theme_filter( $stylesheet, 'stylesheet' );
 		} );
 
-		// add_filter( 'template_include', function( $template ) {
-		// 	// Example: get theme slug from post meta or settings
-		// 	$post_id = get_queried_object_id();
-		// 	$theme_slug = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
-		// 	if ( ! $theme_slug ) {
-		// 		return $template; // Fallback
-		// 	}
-		// 	$alt_template = self::get_theme_template_path( $theme_slug );
-		// 	if ( $alt_template ) {
-		// 		return $alt_template;
-		// 	}
-		// 	return $template; // Fallback
-		// });
-
-
 		// Theme Set Mode hooks (affects all users)
-		
 		add_filter( 'body_class', array( $this, 'add_preview_body_class' ) );
 		
 		// General hooks (for both modes)
@@ -102,34 +95,51 @@ class ThemeSwitcher {
 		add_filter( 'preview_post_link', [ $this, 'add_preview_theme_param_to_preview_link' ], 10, 2 );
 	}
 
-
+	/**
+	 * Summary of resolve_theme_filter
+	 * @param mixed $current_value
+	 * @param mixed $which
+	 */
 	public static function resolve_theme_filter( $current_value, $which ) {
 		$settings = get_option( 'smart_theme_switcher_settings', array() );
 		$themes   = array_keys( wp_get_themes() );
-
 		$post_id = self::get_post_id_early();
-		$post_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
-
 		$theme_slug = false;
+		$preview_theme = '';
 
-		if ( ! empty( $post_theme ) && in_array( $post_theme, $themes, true ) ) {
-			$theme_slug = $post_theme;
-		} elseif ( ! empty( $settings['post_types'] ) ) {
-			
-			foreach ( $settings['post_types'] as $post_type => $setting ) {
-				$post_data = get_post( $post_id);
-				
-				if (! empty( $post_data->post_type ) && $post_data->post_type === $post_type ){
-
-				
-				if ( ! empty( $setting['theme'] ) && in_array( $setting['theme'], $themes, true ) ) {
-					$theme_slug = $setting['theme'];
-					break;
-				}
-			}
+		// 1. Preview mode support
+		$instance = self::get_instance();
+		if ( method_exists( $instance, 'get_preview_theme' ) ) {
+			$preview_theme = $instance->get_preview_theme();
+			if ( ! empty( $preview_theme ) && in_array( $preview_theme, $themes, true ) ) {
+				$theme_slug = $preview_theme;
 			}
 		}
 
+		// 2. Post meta fallback (only if not in preview)
+		if ( ! $theme_slug && $post_id ) {
+			$post_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+			if ( ! empty( $post_theme ) && in_array( $post_theme, $themes, true ) ) {
+				$theme_slug = $post_theme;
+			}
+		}
+
+		// 3. Global settings fallback
+		if ( ! $theme_slug && ! empty( $settings['post_types'] ) && $post_id ) {
+			$post_data = get_post( $post_id );
+			if ( $post_data ) {
+				foreach ( $settings['post_types'] as $post_type => $setting ) {
+					if ( $post_data->post_type === $post_type ) {
+						if ( ! empty( $setting['theme'] ) && in_array( $setting['theme'], $themes, true ) ) {
+							$theme_slug = $setting['theme'];
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// 4. Validate final theme slug
 		if ( ! $theme_slug ) {
 			return $current_value;
 		}
@@ -140,7 +150,7 @@ class ThemeSwitcher {
 		}
 
 		// Log for debugging
-		error_log("STS: $which | post_id: $post_id | theme_slug: $theme_slug | template: ".$theme->get_template()." | stylesheet: ".$theme->get_stylesheet());
+		error_log("STS: $which | preview_theme: $preview_theme | post_id: $post_id | theme_slug: $theme_slug | template: ".$theme->get_template()." | stylesheet: ".$theme->get_stylesheet());
 
 		return ( $which === 'template' )
 			? $theme->get_template()
@@ -252,69 +262,6 @@ class ThemeSwitcher {
 			'smart_theme_switcher_can_user_preview',
 			is_user_logged_in() && current_user_can( 'edit_posts' )
 		);
-	}
-
-	/**
-	 * 
-	 * Filter the theme template if Preview Mode (admin only).
-	 * 
-	 * Filter the theme template for Theme Set Mode (all users).
-	 * 
-	 * @param mixed $template
-	 */
-	public function resolve_template( $template ) {
-		$new_template = $this->get_selected_theme( 'template' );
-
-		if ( ! empty( $new_template ) ) {
-			return $new_template;
-		}
-
-		return $template;
-	}
-
-	public function resolve_stylesheet( $stylesheet ) {
-		$new_stylesheet = $this->get_selected_theme( 'stylesheet' );
-		if ( ! empty( $new_stylesheet ) ) {
-			return $new_stylesheet;
-		}
-		return $stylesheet;
-	}
-
-	public function get_selected_theme( $called_filter ) {
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
-		$themes   = array_keys( wp_get_themes() );
-
-		$post_id = get_queried_object_id();
-		$post_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
-
-		$theme_slug = false;
-
-		if ( ! empty( $post_theme ) && in_array( $post_theme, $themes, true ) ) {
-			$theme_slug = $post_theme;
-		} elseif ( ! empty( $settings['post_types'] ) ) {
-			foreach ( $settings['post_types'] as $setting ) {
-				if ( ! empty( $setting['theme'] ) && in_array( $setting['theme'], $themes, true ) ) {
-					$theme_slug = $setting['theme'];
-					break;
-				}
-			}
-		}
-
-		if ( ! $theme_slug ) {
-			return $current_value;
-		}
-
-		$theme = wp_get_theme( $theme_slug );
-		if ( ! $theme->exists() ) {
-			return $current_value;
-		}
-
-		
-		if ( $called_filter === 'template' ) {
-			return $theme->get_template();   // Always parent slug
-		} elseif ( $called_filter === 'stylesheet' ) {
-			return $theme->get_stylesheet(); // Child or parent slug
-		}
 	}
 	
 	/**
