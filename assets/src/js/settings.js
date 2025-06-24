@@ -66,20 +66,6 @@ import '../css/settings.css';
                     <div className="sts-panel-header">
                         <div className="sts-panel-header-right">
                             <div className="sts-toggle-dropdown-group">
-                                <ToggleControl
-                                    label={stsSettings.strings.enableForPostType}
-                                    checked={postTypeSettings.enabled}
-                                    onChange={(enabled) => {
-                                        onSettingChange('post_types', {
-                                            ...settings.post_types,
-                                            [postType.name]: {
-                                                ...postTypeSettings,
-                                                enabled
-                                            }
-                                        });
-                                    }}
-                                />
-                                
                                 <SelectControl
                                     label={stsSettings.strings.selectTheme}
                                     value={postTypeSettings.theme}
@@ -125,20 +111,6 @@ import '../css/settings.css';
                     <div className="sts-panel-header">
                         <div className="sts-panel-header-right">
                             <div className="sts-toggle-dropdown-group">
-                                <ToggleControl
-                                    label={stsSettings.strings.enableForTaxonomy}
-                                    checked={taxonomySettings.enabled}
-                                    onChange={(enabled) => {
-                                        onSettingChange('taxonomies', {
-                                            ...settings.taxonomies,
-                                            [taxonomy.name]: {
-                                                ...taxonomySettings,
-                                                enabled
-                                            }
-                                        });
-                                    }}
-                                />
-                                
                                 <SelectControl
                                     label={stsSettings.strings.selectTheme}
                                     value={taxonomySettings.theme}
