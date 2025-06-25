@@ -70,8 +70,6 @@ class ThemeSwitcher {
 	 * @return void
 	 */
 	private function init_hooks() {
-		// add_filter( 'template', [ $this, 'resolve_template' ] );
-		// add_filter( 'stylesheet', [ $this, 'resolve_stylesheet' ] );
 		
 		add_filter( 'template', function( $template ) {
 			return ThemeSwitcher::resolve_theme_filter( $template, 'template' );
@@ -139,7 +137,21 @@ class ThemeSwitcher {
 			}
 		}
 
-		// 4. Validate final theme slug
+		// 4. Taxonomy archive fallback (category, tag, custom taxonomy)
+		if ( ! $theme_slug && ! empty( $settings['taxonomies'] ) ) {
+			$taxonomy = self::get_taxonomy_early();
+			$tax_settings = $settings['taxonomies'] ?? [];
+
+			if ( $taxonomy && 
+				isset( $tax_settings[ $taxonomy ]['theme'] ) &&
+				in_array( $tax_settings[ $taxonomy ]['theme'], $themes, true )
+			) {
+				$theme_slug = $tax_settings[ $taxonomy ]['theme'];
+				error_log( "STS: Theme found for taxonomy '$taxonomy' → '$theme_slug'" );
+			}
+		}
+
+		// Final fallback
 		if ( ! $theme_slug ) {
 			return $current_value;
 		}
@@ -157,11 +169,30 @@ class ThemeSwitcher {
 			: $theme->get_stylesheet();
 	}
 
+	/**
+	 * Get post ID early from query vars or request path.
+	 *
+	 * This is a helper function to get the post ID before the main query runs.
+	 * It checks query vars first, then tries to extract from the request path.
+	 *
+	 * @since 1.0.0
+	 * @return int Post ID or 0 if not found.
+	 */
 	public static function get_post_id_early() {
+
+		if ( is_singular() && get_queried_object_id() ) {
+			return get_queried_object_id();
+		}
+
 		// Try ?p=ID for plain permalinks
 		if ( isset($_GET['p']) && is_numeric($_GET['p']) ) {
 			return (int) $_GET['p'];
 		}
+
+		if ( isset( $_POST['post_ID'] ) ) {
+			return (int) $_POST['post_ID'];
+		}
+		
 		// Pretty permalinks: Try to extract the slug from the URL and find the post
 		$request_uri = $_SERVER['REQUEST_URI'];
 		$path = trim(parse_url($request_uri, PHP_URL_PATH), '/');
@@ -177,6 +208,41 @@ class ThemeSwitcher {
 		return 0;
 	}
 
+	/**
+	 * Get taxonomy early from query vars or request path.
+	 *
+	 * This is a helper function to get the taxonomy before the main query runs.
+	 * It checks query vars first, then tries to extract from the request path.
+	 *
+	 * @since 1.0.0
+	 * @return string|bool Taxonomy slug or false if not found.
+	 */
+	public static function get_taxonomy_early() {
+		// Check query vars first
+		if ( isset( $_GET['taxonomy'] ) && taxonomy_exists( $_GET['taxonomy'] ) ) {
+			return sanitize_key( $_GET['taxonomy'] );
+		}
+
+		// Try to extract from request path
+		$request_uri = $_SERVER['REQUEST_URI'] ?? '';
+		$path = trim( parse_url( $request_uri, PHP_URL_PATH ), '/' );
+
+		if ( $path ) {
+			$parts = explode( '/', $path );
+
+			foreach ( $parts as $part ) {
+				foreach ( get_taxonomies( [], 'names' ) as $taxonomy ) {
+					$term = get_term_by( 'slug', $part, $taxonomy );
+					if ( $term ) {
+						return $taxonomy;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+	
 	public function add_preview_theme_param_to_preview_link( $preview_link, $post ) {
 		
 		$preview_theme = $this->get_preview_theme_for_post( $post->ID );

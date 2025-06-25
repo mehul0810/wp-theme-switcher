@@ -137,7 +137,7 @@ class SettingsPage {
 					'advancedTab'         => __( 'Advanced', 'smart-theme-switcher' ),
 					
 					// Post Types & Taxonomies.
-					'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'smart-theme-switcher' ),
+					//'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'smart-theme-switcher' ),
 					'selectTheme'         => __( 'Select theme', 'smart-theme-switcher' ),
 					
 					// Advanced settings.

@@ -308,7 +308,7 @@ class Settings {
 				}
 				
 				$sanitized_input['post_types'][ sanitize_key( $post_type ) ] = array(
-					'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
+					//'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
 					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
 				);
 			}
@@ -325,7 +325,7 @@ class Settings {
 				}
 				
 				$sanitized_input['taxonomies'][ sanitize_key( $taxonomy ) ] = array(
-					'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
+					//'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
 					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
 				);
 			}
