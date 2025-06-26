@@ -242,7 +242,7 @@ class ThemeSwitcher {
 
 		return false;
 	}
-	
+
 	public function add_preview_theme_param_to_preview_link( $preview_link, $post ) {
 		
 		$preview_theme = $this->get_preview_theme_for_post( $post->ID );
@@ -364,13 +364,20 @@ class ThemeSwitcher {
 	 * @return void
 	 */
 	public function enqueue_scripts() {
+
 		// Check if preview mode is enabled in settings
 		if ( ! $this->theme_resolver->is_preview_mode_enabled() ) {
 			return;
 		}
-		
+
 		// Only enqueue for users who can preview themes
 		if ( ! $this->can_user_preview() ) {
+			return;
+		}
+		
+		// Check if user is currently in preview mode
+		$preview_theme = $this->get_preview_theme();
+		if ( ! $preview_theme ) {
 			return;
 		}
 
@@ -382,10 +389,27 @@ class ThemeSwitcher {
 			STS_PLUGIN_VERSION
 		);
 
+		// Enqueue preview banner-specific CSS
+		wp_enqueue_style(
+			'sts-preview-banner',
+			STS_PLUGIN_URL . 'assets/dist/preview-banner.css',
+			array(),
+			STS_PLUGIN_VERSION
+		);
+
 		// Enqueue preview JS
 		wp_enqueue_script(
 			'sts-preview',
 			STS_PLUGIN_URL . 'assets/dist/preview.js',
+			array( 'jquery' ),
+			STS_PLUGIN_VERSION,
+			true
+		);
+
+		// Enqueue preview-banner specific JS
+		wp_enqueue_script(
+			'sts-preview-banner',
+			STS_PLUGIN_URL . 'assets/dist/preview-banner.js',
 			array( 'jquery' ),
 			STS_PLUGIN_VERSION,
 			true
@@ -403,6 +427,20 @@ class ThemeSwitcher {
 				'isPreviewMode' => (bool) $this->get_preview_theme(),
 			)
 		);
+
+		// Localize preview-banner script (if that’s where UI is handled)
+		wp_localize_script(
+			'sts-preview-banner',
+			'PreviewBanner',
+			array(
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'nonce'         => wp_create_nonce( 'sts-preview-banner-nonce' ),
+				'currentUrl'    => esc_url( remove_query_arg( $this->get_query_param_name() ) ),
+				'queryParam'    => $this->get_query_param_name(),
+				'currentTheme'  => $preview_theme,
+			)
+		);
+		
 	}
 
 	/**
