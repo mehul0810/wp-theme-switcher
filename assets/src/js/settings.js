@@ -1,7 +1,7 @@
 /**
  * Settings Page React Component
  * 
- * @package SmartThemeSwitcher
+ * @package WpThemeSwitcher
  */
 
 import '../css/settings.css';
@@ -179,7 +179,7 @@ import '../css/settings.css';
 
         return (
             <div className="sts-general-tab">
-                <h3>{__('Post Types', 'smart-theme-switcher')}</h3>
+                <h3>{__('Post Types', 'wts-theme-switcher')}</h3>
                 {Object.values(postTypes).map((postType) => (
                     <PostTypePanel 
                         key={postType.name}
@@ -189,7 +189,7 @@ import '../css/settings.css';
                     />
                 ))}
                 
-                <h3>{__('Taxonomies', 'smart-theme-switcher')}</h3>
+                <h3>{__('Taxonomies', 'wts-theme-switcher')}</h3>
                 {Object.values(taxonomies).map((taxonomy) => (
                     <TaxonomyPanel
                         key={taxonomy.name}
@@ -254,7 +254,7 @@ import '../css/settings.css';
             // Legacy settings for backward compatibility
             enable_preview_banner: 'yes',
             default_preview_theme: '',
-            preview_query_param: 'sts_theme'
+            preview_query_param: 'wts_theme'
         });
         
         const [postTypes, setPostTypes] = useState({});

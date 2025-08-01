@@ -2,13 +2,13 @@
 /**
  * Frontend Class
  *
- * @package SmartThemeSwitcher
+ * @package WpThemeSwitcher
  * @since 1.0.0
  */
 
-namespace SmartThemeSwitcher\Frontend;
+namespace WpThemeSwitcher\Frontend;
 
-use SmartThemeSwitcher\ThemeSwitcher;
+use WpThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,7 +42,7 @@ class Frontend {
 	 */
 	private function init_hooks() {
 		$theme_switcher = new ThemeSwitcher();
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$settings = get_option( 'wts_theme_switcher_settings', array() );
 		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
 		$preview_theme = $theme_switcher->get_preview_theme();
 
@@ -82,15 +82,15 @@ class Frontend {
 		<div id="sts-preview-banner" class="sts-preview-banner frontend">
 			<div class="sts-preview-banner-inner">
 				<div class="sts-preview-info">
-					<span class="sts-preview-label"><?php esc_html_e( 'Preview Mode:', 'smart-theme-switcher' ); ?></span>
+					<span class="sts-preview-label"><?php esc_html_e( 'Preview Mode:', 'wts-theme-switcher' ); ?></span>
 					<span class="sts-preview-theme"><?php echo esc_html( $preview_theme->get( 'Name' ) ); ?></span>
 				</div>
 				
 				<div class="sts-preview-actions">
 					<div class="sts-theme-select-wrapper">
-						<label for="sts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'smart-theme-switcher' ); ?></label>
+						<label for="sts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'wts-theme-switcher' ); ?></label>
 						<select id="sts-theme-select" class="sts-theme-select">
-							<option value=""><?php esc_html_e( 'Switch Theme...', 'smart-theme-switcher' ); ?></option>
+							<option value=""><?php esc_html_e( 'Switch Theme...', 'wts-theme-switcher' ); ?></option>
 							<?php foreach ( $themes as $slug => $name ) : ?>
 								<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $slug, $preview_theme_slug ); ?>>
 									<?php echo esc_html( $name ); ?>
@@ -100,7 +100,7 @@ class Frontend {
 					</div>
 					
 					<a href="<?php echo esc_url( $current_url ); ?>" class="sts-exit-preview-button button button-secondary">
-						<?php esc_html_e( 'Exit Preview', 'smart-theme-switcher' ); ?>
+						<?php esc_html_e( 'Exit Preview', 'wts-theme-switcher' ); ?>
 					</a>
 				</div>
 			</div>
@@ -134,8 +134,8 @@ class Frontend {
 		// Only show notice if there's a mismatch.
 		if ( $preview_is_block !== $active_is_block ) {
 			$message = $preview_is_block
-				? __( 'You are previewing a block theme while your active theme is classic. Some layouts may appear differently.', 'smart-theme-switcher' )
-				: __( 'You are previewing a classic theme while your active theme is block-based. Some layouts may appear differently.', 'smart-theme-switcher' );
+				? __( 'You are previewing a block theme while your active theme is classic. Some layouts may appear differently.', 'wts-theme-switcher' )
+				: __( 'You are previewing a classic theme while your active theme is block-based. Some layouts may appear differently.', 'wts-theme-switcher' );
 			
 			// Output notice.
 			?>

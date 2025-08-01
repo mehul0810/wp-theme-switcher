@@ -2,11 +2,11 @@
 /**
  * Settings Page Class
  *
- * @package SmartThemeSwitcher
+ * @package WpThemeSwitcher
  * @since 1.0.0
  */
 
-namespace SmartThemeSwitcher\Admin;
+namespace WpThemeSwitcher\Admin;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -54,10 +54,10 @@ class SettingsPage {
 	 */
 	public function add_settings_page() {
 		add_options_page(
-			__( 'Smart Theme Switcher Settings', 'smart-theme-switcher' ),
-			__( 'Smart Theme Switcher', 'smart-theme-switcher' ),
+			__( 'WP Theme Switcher Settings', 'wts-theme-switcher' ),
+			__( 'WP Theme Switcher', 'wts-theme-switcher' ),
 			'manage_options',
-			'smart-theme-switcher',
+			'wts-theme-switcher',
 			array( $this, 'render_settings_page' )
 		);
 	}
@@ -84,14 +84,14 @@ class SettingsPage {
 	 */
 	public function enqueue_admin_scripts( $hook ) {
 		// Only enqueue on our settings page.
-		if ( 'settings_page_smart-theme-switcher' !== $hook ) {
+		if ( 'settings_page_wts-theme-switcher' !== $hook ) {
 			return;
 		}
 
 		// Enqueue React and settings script.
 		wp_enqueue_script(
 			'sts-settings',
-			STS_PLUGIN_URL . 'assets/dist/settings.js',
+			WTS_PLUGIN_URL . 'assets/dist/settings.js',
 			array( 
 				'wp-element', 
 				'wp-components', 
@@ -100,7 +100,7 @@ class SettingsPage {
 				'wp-data',
 				'wp-notices',
 			),
-			STS_PLUGIN_VERSION,
+			WTS_PLUGIN_VERSION,
 			true
 		);
 
@@ -110,9 +110,9 @@ class SettingsPage {
 		// Enqueue settings CSS.
 		wp_enqueue_style(
 			'sts-settings',
-			STS_PLUGIN_URL . 'assets/dist/settings.css',
+			WTS_PLUGIN_URL . 'assets/dist/settings.css',
 			array( 'wp-components' ),
-			STS_PLUGIN_VERSION
+			WTS_PLUGIN_VERSION
 		);
 
 		// Localize script with data and REST API endpoints.
@@ -121,40 +121,40 @@ class SettingsPage {
 			'stsSettings',
 			array(
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
-				'restUrl'     => esc_url_raw( rest_url( 'smart-theme-switcher/v1' ) ),
+				'restUrl'     => esc_url_raw( rest_url( 'wts-theme-switcher/v1' ) ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
-				'version'     => STS_PLUGIN_VERSION,
+				'version'     => WTS_PLUGIN_VERSION,
 				'adminUrl'    => admin_url(),
-				'docUrl'      => 'https://github.com/mehul0810/smart-theme-switcher',
+				'docUrl'      => 'https://github.com/mehul0810/wp-theme-switcher',
 				'strings'     => array(
 					// Header.
-					'pluginName'          => __( 'Smart Theme Switcher', 'smart-theme-switcher' ),
-					'settingsTitle'       => __( 'Settings', 'smart-theme-switcher' ),
-					'viewDocs'            => __( 'View Documentation', 'smart-theme-switcher' ),
+					'pluginName'          => __( 'WP Theme Switcher', 'wts-theme-switcher' ),
+					'settingsTitle'       => __( 'Settings', 'wts-theme-switcher' ),
+					'viewDocs'            => __( 'View Documentation', 'wts-theme-switcher' ),
 					
 					// Tabs.
-					'generalTab'          => __( 'General', 'smart-theme-switcher' ),
-					'advancedTab'         => __( 'Advanced', 'smart-theme-switcher' ),
+					'generalTab'          => __( 'General', 'wts-theme-switcher' ),
+					'advancedTab'         => __( 'Advanced', 'wts-theme-switcher' ),
 					
 					// Post Types & Taxonomies.
-					'enableForPostType'   => __( 'Enable theme preview for this post type', 'smart-theme-switcher' ),
-					'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'smart-theme-switcher' ),
-					'selectTheme'         => __( 'Select theme', 'smart-theme-switcher' ),
+					'enableForPostType'   => __( 'Enable theme preview for this post type', 'wts-theme-switcher' ),
+					'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'wts-theme-switcher' ),
+					'selectTheme'         => __( 'Select theme', 'wts-theme-switcher' ),
 					
 					// Advanced settings.
-					'enableThemePreview'  => __( 'Enable Theme Preview', 'smart-theme-switcher' ),
-					'enableDebugging'     => __( 'Enable Debugging', 'smart-theme-switcher' ),
+					'enableThemePreview'  => __( 'Enable Theme Preview', 'wts-theme-switcher' ),
+					'enableDebugging'     => __( 'Enable Debugging', 'wts-theme-switcher' ),
 					
 					// Actions.
-					'save'                => __( 'Save Settings', 'smart-theme-switcher' ),
-					'saving'              => __( 'Saving...', 'smart-theme-switcher' ),
-					'saved'               => __( 'Settings Saved', 'smart-theme-switcher' ),
+					'save'                => __( 'Save Settings', 'wts-theme-switcher' ),
+					'saving'              => __( 'Saving...', 'wts-theme-switcher' ),
+					'saved'               => __( 'Settings Saved', 'wts-theme-switcher' ),
 					
 					// Messages.
-					'loading'             => __( 'Loading...', 'smart-theme-switcher' ),
-					'error'               => __( 'Error Saving Settings', 'smart-theme-switcher' ),
-					'success'             => __( 'Settings saved successfully!', 'smart-theme-switcher' ),
-					'useActiveTheme'      => __( 'Use Active Theme', 'smart-theme-switcher' ),
+					'loading'             => __( 'Loading...', 'wts-theme-switcher' ),
+					'error'               => __( 'Error Saving Settings', 'wts-theme-switcher' ),
+					'success'             => __( 'Settings saved successfully!', 'wts-theme-switcher' ),
+					'useActiveTheme'      => __( 'Use Active Theme', 'wts-theme-switcher' ),
 				),
 			)
 		);

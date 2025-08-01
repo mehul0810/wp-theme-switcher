@@ -2,11 +2,11 @@
 /**
  * Main Plugin Class
  *
- * @package SmartThemeSwitcher
+ * @package WpThemeSwitcher
  * @since 1.0.0
  */
 
-namespace SmartThemeSwitcher;
+namespace WpThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -44,10 +44,10 @@ final class Plugin {
 	 */
 	private function setup() {
 		// Register activation hook.
-		register_activation_hook( STS_PLUGIN_FILE, array( $this, 'activate' ) );
+		register_activation_hook( WTS_PLUGIN_FILE, array( $this, 'activate' ) );
 
 		// Register deactivation hook.
-		register_deactivation_hook( STS_PLUGIN_FILE, array( $this, 'deactivate' ) );
+		register_deactivation_hook( WTS_PLUGIN_FILE, array( $this, 'deactivate' ) );
 	}
 
 	/**
@@ -82,7 +82,7 @@ final class Plugin {
 		// Set default options.
 		$default_options = array(
 			'enable_preview'        => 'yes',
-			'preview_query_param'   => STS_DEFAULT_QUERY_PARAM,
+			'preview_query_param'   => WTS_DEFAULT_QUERY_PARAM,
 			'advanced'              => array(
 				'preview_enabled'     => true,
 				'debug_enabled'       => false,
@@ -90,7 +90,7 @@ final class Plugin {
 		);
 
 		// Add options if they don't exist.
-		add_option( 'smart_theme_switcher_settings', $default_options );
+		add_option( 'wts_theme_switcher_settings', $default_options );
 
 		// Flush rewrite rules.
 		flush_rewrite_rules();
@@ -115,9 +115,9 @@ final class Plugin {
 	 */
 	public function load_textdomain() {
 		load_plugin_textdomain(
-			'smart-theme-switcher',
+			'wts-theme-switcher',
 			false,
-			dirname( plugin_basename( STS_PLUGIN_FILE ) ) . '/languages/'
+			dirname( plugin_basename( WTS_PLUGIN_FILE ) ) . '/languages/'
 		);
 	}
 }

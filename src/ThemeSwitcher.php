@@ -2,11 +2,11 @@
 /**
  * Theme Switcher Class
  *
- * @package SmartThemeSwitcher
+ * @package WpThemeSwitcher
  * @since 1.0.0
  */
 
-namespace SmartThemeSwitcher;
+namespace WpThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -94,7 +94,7 @@ class ThemeSwitcher {
 
 	public function get_preview_theme_for_post( $post_id ) {
 		// 1. Check for theme set in post meta
-		$theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+		$theme = get_post_meta( $post_id, 'wts_theme_switcher_active_theme', true );
 	
 		if ( ! empty( $theme ) ) {
 			return $theme;
@@ -290,17 +290,17 @@ class ThemeSwitcher {
 		// Enqueue preview CSS
 		wp_enqueue_style(
 			'sts-preview',
-			STS_PLUGIN_URL . 'assets/dist/preview.css',
+			WTS_PLUGIN_URL . 'assets/dist/preview.css',
 			array(),
-			STS_PLUGIN_VERSION
+			WTS_PLUGIN_VERSION
 		);
 
 		// Enqueue preview JS
 		wp_enqueue_script(
 			'sts-preview',
-			STS_PLUGIN_URL . 'assets/dist/preview.js',
+			WTS_PLUGIN_URL . 'assets/dist/preview.js',
 			array( 'jquery' ),
-			STS_PLUGIN_VERSION,
+			WTS_PLUGIN_VERSION,
 			true
 		);
 
@@ -336,7 +336,7 @@ class ThemeSwitcher {
 		// Enqueue editor script
 		wp_enqueue_script(
 			'sts-editor',
-			STS_PLUGIN_URL . 'assets/dist/individual.js',
+			WTS_PLUGIN_URL . 'assets/dist/individual.js',
 			array(
 				'wp-blocks',
 				'wp-element',
@@ -347,7 +347,7 @@ class ThemeSwitcher {
 				'wp-edit-post',
 				'wp-data',
 			),
-			STS_PLUGIN_VERSION,
+			WTS_PLUGIN_VERSION,
 			true
 		);
 
@@ -386,7 +386,7 @@ class ThemeSwitcher {
 	public function register_post_meta() {
 		// Register meta for all public post types.
 		foreach ( get_post_types( array( 'public' => true ) ) as $post_type ) {
-			register_post_meta( $post_type, 'smart_theme_switcher_active_theme', array(
+			register_post_meta( $post_type, 'wts_theme_switcher_active_theme', array(
 				'show_in_rest'      => true,
 				'single'            => true,
 				'type'              => 'string',
@@ -405,7 +405,7 @@ class ThemeSwitcher {
 	public function register_term_meta() {
 		// Register meta for all public taxonomies.
 		foreach ( get_taxonomies( array( 'public' => true ) ) as $taxonomy ) {
-			register_term_meta( $taxonomy, 'smart_theme_switcher_active_theme', array(
+			register_term_meta( $taxonomy, 'wts_theme_switcher_active_theme', array(
 				'show_in_rest'      => true,
 				'single'            => true,
 				'type'              => 'string',
@@ -474,27 +474,27 @@ class ThemeSwitcher {
 	public function clear_theme_caches( $post_id = 0, $term_id = 0, $post_type = '', $taxonomy = '' ) {
 		// Clear specific caches if IDs or types provided
 		if ( $post_id ) {
-			wp_cache_delete( 'sts_post_' . $post_id, 'smart_theme_switcher' );
+			wp_cache_delete( 'wts_post_' . $post_id, 'wts_theme_switcher' );
 		}
 		
 		if ( $term_id ) {
-			wp_cache_delete( 'sts_term_' . $term_id, 'smart_theme_switcher' );
+			wp_cache_delete( 'wts_term_' . $term_id, 'wts_theme_switcher' );
 		}
 		
 		if ( $post_type ) {
-			wp_cache_delete( 'sts_post_type_' . $post_type, 'smart_theme_switcher' );
+			wp_cache_delete( 'wts_post_type_' . $post_type, 'wts_theme_switcher' );
 		}
 		
 		if ( $taxonomy ) {
-			wp_cache_delete( 'sts_taxonomy_' . $taxonomy, 'smart_theme_switcher' );
+			wp_cache_delete( 'wts_taxonomy_' . $taxonomy, 'wts_theme_switcher' );
 		}
 		
 		// Or clear all theme caches if no specific IDs/types provided
 		if ( ! $post_id && ! $term_id && ! $post_type && ! $taxonomy ) {
-			// Get all cache keys for smart_theme_switcher group and delete them
+			// Get all cache keys for wts_theme_switcher group and delete them
 			// Since wp_cache_flush() is too broad, we have to use creative workarounds
 			// We'll use an action to allow other caching plugins to clear their caches
-			do_action( 'smart_theme_switcher_clear_caches' );
+			do_action( 'wts_theme_switcher_clear_caches' );
 		}
 	}
 	
@@ -523,13 +523,13 @@ class ThemeSwitcher {
 		
 		// Check post edit screen
 		if ( 'post.php' === $pagenow && $post && isset( $_GET['action'] ) && 'edit' === $_GET['action'] ) {
-			$theme_slug = get_post_meta( $post->ID, 'smart_theme_switcher_active_theme', true );
+			$theme_slug = get_post_meta( $post->ID, 'wts_theme_switcher_active_theme', true );
 			if ( ! empty( $theme_slug ) ) {
 				$theme = wp_get_theme( $theme_slug );
 				if ( ! $theme->exists() ) {
 					$missing_theme = $theme_slug;
 					$context = sprintf( 
-						__( 'the post "%s"', 'smart-theme-switcher' ),
+						__( 'the post "%s"', 'wts-theme-switcher' ),
 						get_the_title( $post->ID )
 					);
 				}
@@ -542,14 +542,14 @@ class ThemeSwitcher {
 			$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_key( $_GET['taxonomy'] ) : '';
 			
 			if ( $term_id && $taxonomy ) {
-				$theme_slug = get_term_meta( $term_id, 'smart_theme_switcher_active_theme', true );
+				$theme_slug = get_term_meta( $term_id, 'wts_theme_switcher_active_theme', true );
 				if ( ! empty( $theme_slug ) ) {
 					$theme = wp_get_theme( $theme_slug );
 					if ( ! $theme->exists() ) {
 						$missing_theme = $theme_slug;
 						$term = get_term( $term_id, $taxonomy );
 						$context = sprintf( 
-							__( 'the term "%s"', 'smart-theme-switcher' ),
+							__( 'the term "%s"', 'wts-theme-switcher' ),
 							$term->name
 						);
 					}
@@ -558,9 +558,9 @@ class ThemeSwitcher {
 		}
 		
 		// Check settings page
-		if ( isset( $screen->id ) && 'settings_page_smart-theme-switcher' === $screen->id ) {
+		if ( isset( $screen->id ) && 'settings_page_wts-theme-switcher' === $screen->id ) {
 			// Check post type settings
-			$settings = get_option( 'smart_theme_switcher_settings', array() );
+			$settings = get_option( 'wts_theme_switcher_settings', array() );
 			
 			if ( isset( $settings['post_types'] ) && is_array( $settings['post_types'] ) ) {
 				foreach ( $settings['post_types'] as $post_type => $post_type_settings ) {
@@ -575,7 +575,7 @@ class ThemeSwitcher {
 							$missing_theme = $post_type_settings['theme'];
 							$post_type_obj = get_post_type_object( $post_type );
 							$context = sprintf( 
-								__( 'all "%s" post types', 'smart-theme-switcher' ),
+								__( 'all "%s" post types', 'wts-theme-switcher' ),
 								$post_type_obj ? $post_type_obj->labels->name : $post_type
 							);
 							break;
@@ -598,7 +598,7 @@ class ThemeSwitcher {
 							$missing_theme = $taxonomy_settings['theme'];
 							$taxonomy_obj = get_taxonomy( $taxonomy );
 							$context = sprintf( 
-								__( 'all "%s" taxonomy archives', 'smart-theme-switcher' ),
+								__( 'all "%s" taxonomy archives', 'wts-theme-switcher' ),
 								$taxonomy_obj ? $taxonomy_obj->labels->name : $taxonomy
 							);
 							break;
@@ -612,7 +612,7 @@ class ThemeSwitcher {
 		if ( $missing_theme && $context ) {
 			$notice = sprintf(
 				/* translators: 1: Theme name, 2: Context where theme is assigned */
-				__( '<strong>Warning:</strong> The theme "%1$s" is assigned to %2$s but is not installed or is broken. The default theme will be used instead.', 'smart-theme-switcher' ),
+				__( '<strong>Warning:</strong> The theme "%1$s" is assigned to %2$s but is not installed or is broken. The default theme will be used instead.', 'wts-theme-switcher' ),
 				esc_html( $missing_theme ),
 				esc_html( $context )
 			);

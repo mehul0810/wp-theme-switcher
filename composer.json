@@ -1,5 +1,5 @@
 {
-    "name": "mehul0810/smart-theme-switcher",
+    "name": "mehul0810/wp-theme-switcher",
     "description": "Preview, test, and assign any installed WordPress theme to individual pages, posts, or taxonomy archives—privately and instantly.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SmartThemeSwitcher\\": "src/"
+            "WpThemeSwitcher\\": "src/"
         }
     },
     "minimum-stability": "dev",

@@ -2,13 +2,13 @@
 /**
  * Admin Class
  *
- * @package SmartThemeSwitcher
+ * @package WpThemeSwitcher
  * @since 1.0.0
  */
 
-namespace SmartThemeSwitcher\Admin;
+namespace WpThemeSwitcher\Admin;
 
-use SmartThemeSwitcher\ThemeSwitcher;
+use WpThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,7 +42,7 @@ class Admin {
 	 */
 	private function init_hooks() {
 		// Add settings link to plugins page.
-		add_filter( 'plugin_action_links_' . plugin_basename( STS_PLUGIN_FILE ), array( $this, 'add_settings_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( WTS_PLUGIN_FILE ), array( $this, 'add_settings_link' ) );
 		
 		// Add admin bar menu.
 		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_menu' ), 999 );
@@ -59,8 +59,8 @@ class Admin {
 		// Add settings link.
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'options-general.php?page=smart-theme-switcher' ),
-			__( 'Settings', 'smart-theme-switcher' )
+			admin_url( 'options-general.php?page=wts-theme-switcher' ),
+			__( 'Settings', 'wts-theme-switcher' )
 		);
 
 		array_unshift( $links, $settings_link );
@@ -94,7 +94,7 @@ class Admin {
 				'id'    => 'sts-preview',
 				'title' => sprintf(
 					/* translators: %s: Theme name */
-					__( 'Previewing: %s', 'smart-theme-switcher' ),
+					__( 'Previewing: %s', 'wts-theme-switcher' ),
 					$theme->get( 'Name' )
 				),
 				'href'  => '#',
@@ -108,7 +108,7 @@ class Admin {
 			$wp_admin_bar->add_node( array(
 				'id'     => 'sts-exit-preview',
 				'parent' => 'sts-preview',
-				'title'  => __( 'Exit Preview', 'smart-theme-switcher' ),
+				'title'  => __( 'Exit Preview', 'wts-theme-switcher' ),
 				'href'   => $current_url,
 				'meta'   => array(
 					'class' => 'sts-exit-preview-link',
@@ -122,7 +122,7 @@ class Admin {
 			$wp_admin_bar->add_node( array(
 				'id'     => 'sts-switch-theme',
 				'parent' => 'sts-preview',
-				'title'  => __( 'Switch Theme', 'smart-theme-switcher' ),
+				'title'  => __( 'Switch Theme', 'wts-theme-switcher' ),
 				'href'   => '#',
 			) );
 

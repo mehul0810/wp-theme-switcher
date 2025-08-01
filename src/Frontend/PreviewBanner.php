@@ -2,13 +2,13 @@
 /**
  * Preview Banner Class
  *
- * @package SmartThemeSwitcher
+ * @package WpThemeSwitcher
  * @since 1.0.0
  */
 
-namespace SmartThemeSwitcher\Frontend;
+namespace WpThemeSwitcher\Frontend;
 
-use SmartThemeSwitcher\ThemeSwitcher;
+use WpThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,7 +42,7 @@ class PreviewBanner {
 	 */
 	private function init_hooks() {
 		// Only register hooks if preview mode is enabled in settings
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$settings = get_option( 'wts_theme_switcher_settings', array() );
 		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
 		
 		if ( ! $preview_enabled ) {
@@ -79,7 +79,7 @@ class PreviewBanner {
 		$theme_switcher = new ThemeSwitcher();
 		
 		// Get settings
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$settings = get_option( 'wts_theme_switcher_settings', array() );
 		
 		// Check if preview mode is enabled in settings
 		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
@@ -101,17 +101,17 @@ class PreviewBanner {
 		// Enqueue banner CSS
 		wp_enqueue_style(
 			'sts-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/preview-banner.css',
+			WTS_PLUGIN_URL . 'assets/dist/preview-banner.css',
 			array(),
-			STS_PLUGIN_VERSION
+			WTS_PLUGIN_VERSION
 		);
 
 		// Enqueue banner JS
 		wp_enqueue_script(
 			'sts-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/preview-banner.js',
+			WTS_PLUGIN_URL . 'assets/dist/preview-banner.js',
 			array( 'jquery' ),
-			STS_PLUGIN_VERSION,
+			WTS_PLUGIN_VERSION,
 			true
 		);
 
@@ -141,22 +141,22 @@ class PreviewBanner {
 	public function ajax_switch_theme() {
 		// Check nonce
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'sts-preview-banner-nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'smart-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce. Please refresh the page and try again.', 'wts-theme-switcher' ) ) );
 		}
 
 		// Get theme switcher instance
 		$theme_switcher = new ThemeSwitcher();
 		
 		// Check if preview mode is enabled in settings
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$settings = get_option( 'wts_theme_switcher_settings', array() );
 		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
 		if ( ! $preview_enabled ) {
-			wp_send_json_error( array( 'message' => __( 'Preview mode is disabled in settings.', 'smart-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Preview mode is disabled in settings.', 'wts-theme-switcher' ) ) );
 		}
 		
 		// Check if user has permission to preview
 		if ( ! $theme_switcher->can_user_preview() ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to preview themes.', 'smart-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to preview themes.', 'wts-theme-switcher' ) ) );
 		}
 
 		// Get theme from request
@@ -164,7 +164,7 @@ class PreviewBanner {
 		
 		// Check if theme exists
 		if ( empty( $theme ) || ! wp_get_theme( $theme )->exists() ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid theme selection.', 'smart-theme-switcher' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid theme selection.', 'wts-theme-switcher' ) ) );
 		}
 
 		// Get current URL
@@ -175,7 +175,7 @@ class PreviewBanner {
 		
 		// Send success response
 		wp_send_json_success( array(
-			'message' => __( 'Theme switched successfully.', 'smart-theme-switcher' ),
+			'message' => __( 'Theme switched successfully.', 'wts-theme-switcher' ),
 			'url'     => $new_url,
 		) );
 	}
@@ -194,7 +194,7 @@ class PreviewBanner {
 		$theme_switcher = new ThemeSwitcher();
 		
 		// Check if preview mode is enabled in settings
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$settings = get_option( 'wts_theme_switcher_settings', array() );
 		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
 		if ( ! $preview_enabled ) {
 			return;
@@ -216,7 +216,7 @@ class PreviewBanner {
 		
 		// Get assigned theme (what would be shown if not previewing)
 		$assigned_theme = $theme_switcher->get_assigned_theme();
-		$assigned_theme_name = $assigned_theme ? $themes[$assigned_theme] : __( 'Default Theme', 'smart-theme-switcher' );
+		$assigned_theme_name = $assigned_theme ? $themes[$assigned_theme] : __( 'Default Theme', 'wts-theme-switcher' );
 		
 		// Get current theme name
 		$current_theme_name = isset( $themes[$preview_theme] ) ? $themes[$preview_theme] : $preview_theme;
@@ -229,17 +229,17 @@ class PreviewBanner {
 		
 		// Output the banner
 		?>
-		<div id="sts-preview-banner" class="sts-preview-banner other" role="complementary" aria-label="<?php esc_attr_e( 'Theme Preview Controls', 'smart-theme-switcher' ); ?>">
+		<div id="sts-preview-banner" class="sts-preview-banner other" role="complementary" aria-label="<?php esc_attr_e( 'Theme Preview Controls', 'wts-theme-switcher' ); ?>">
 			<div class="sts-preview-banner-inner">
-				<span class="sts-preview-label"><?php esc_html_e( 'Previewing:', 'smart-theme-switcher' ); ?></span>
+				<span class="sts-preview-label"><?php esc_html_e( 'Previewing:', 'wts-theme-switcher' ); ?></span>
 				<strong class="sts-preview-theme-name"><?php echo esc_html( $current_theme_name ); ?></strong>
 				
 				<div class="sts-preview-controls">
-					<label for="sts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select theme to preview', 'smart-theme-switcher' ); ?></label>
+					<label for="sts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select theme to preview', 'wts-theme-switcher' ); ?></label>
 					<select id="sts-theme-select" class="sts-theme-select">
-						<option value=""><?php esc_html_e( '— Switch Theme —', 'smart-theme-switcher' ); ?></option>
+						<option value=""><?php esc_html_e( '— Switch Theme —', 'wts-theme-switcher' ); ?></option>
 						<option value="<?php echo esc_attr( $assigned_theme ); ?>" <?php selected( $preview_theme, $assigned_theme ); ?>>
-							<?php esc_html_e( 'Use Assigned Theme', 'smart-theme-switcher' ); ?> (<?php echo esc_html( $assigned_theme_name ); ?>)
+							<?php esc_html_e( 'Use Assigned Theme', 'wts-theme-switcher' ); ?> (<?php echo esc_html( $assigned_theme_name ); ?>)
 						</option>
 						<?php foreach ( $themes as $slug => $name ) : ?>
 							<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $preview_theme, $slug ); ?>>
@@ -249,7 +249,7 @@ class PreviewBanner {
 					</select>
 					
 					<a href="<?php echo esc_url( $current_url ); ?>" class="sts-exit-preview-button button">
-						<?php esc_html_e( 'Exit Preview', 'smart-theme-switcher' ); ?>
+						<?php esc_html_e( 'Exit Preview', 'wts-theme-switcher' ); ?>
 					</a>
 				</div>
 			</div>
