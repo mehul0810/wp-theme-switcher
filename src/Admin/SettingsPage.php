@@ -54,10 +54,10 @@ class SettingsPage {
 	 */
 	public function add_settings_page() {
 		add_options_page(
-			__( 'WP Theme Switcher Settings', 'wts-theme-switcher' ),
-			__( 'WP Theme Switcher', 'wts-theme-switcher' ),
+			__( 'WP Theme Switcher Settings', 'wpts-theme-switcher' ),
+			__( 'WP Theme Switcher', 'wpts-theme-switcher' ),
 			'manage_options',
-			'wts-theme-switcher',
+			'wpts-theme-switcher',
 			array( $this, 'render_settings_page' )
 		);
 	}
@@ -71,7 +71,7 @@ class SettingsPage {
 	public function render_settings_page() {
 		// Modern, no wrapper approach - just the container for React to render in.
 		?>
-		<div id="sts-settings-app" class="sts-settings-app-wrap"></div>
+		<div id="wpts-settings-app" class="wpts-settings-app-wrap"></div>
 		<?php
 	}
 
@@ -84,14 +84,14 @@ class SettingsPage {
 	 */
 	public function enqueue_admin_scripts( $hook ) {
 		// Only enqueue on our settings page.
-		if ( 'settings_page_wts-theme-switcher' !== $hook ) {
+		if ( 'settings_page_wpts-theme-switcher' !== $hook ) {
 			return;
 		}
 
 		// Enqueue React and settings script.
 		wp_enqueue_script(
-			'sts-settings',
-			WTS_PLUGIN_URL . 'assets/dist/settings.js',
+			'wpts-settings',
+			WPTS_PLUGIN_URL . 'assets/dist/settings.js',
 			array( 
 				'wp-element', 
 				'wp-components', 
@@ -100,7 +100,7 @@ class SettingsPage {
 				'wp-data',
 				'wp-notices',
 			),
-			WTS_PLUGIN_VERSION,
+			WPTS_PLUGIN_VERSION,
 			true
 		);
 
@@ -109,51 +109,51 @@ class SettingsPage {
 
 		// Enqueue settings CSS.
 		wp_enqueue_style(
-			'sts-settings',
-			WTS_PLUGIN_URL . 'assets/dist/settings.css',
+			'wpts-settings',
+			WPTS_PLUGIN_URL . 'assets/dist/settings.css',
 			array( 'wp-components' ),
-			WTS_PLUGIN_VERSION
+			WPTS_PLUGIN_VERSION
 		);
 
 		// Localize script with data and REST API endpoints.
 		wp_localize_script(
-			'sts-settings',
-			'stsSettings',
+			'wpts-settings',
+			'wptsSettings',
 			array(
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
-				'restUrl'     => esc_url_raw( rest_url( 'wts-theme-switcher/v1' ) ),
+				'restUrl'     => esc_url_raw( rest_url( 'wpts-theme-switcher/v1' ) ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
-				'version'     => WTS_PLUGIN_VERSION,
+				'version'     => WPTS_PLUGIN_VERSION,
 				'adminUrl'    => admin_url(),
 				'docUrl'      => 'https://github.com/mehul0810/wp-theme-switcher',
 				'strings'     => array(
 					// Header.
-					'pluginName'          => __( 'WP Theme Switcher', 'wts-theme-switcher' ),
-					'settingsTitle'       => __( 'Settings', 'wts-theme-switcher' ),
-					'viewDocs'            => __( 'View Documentation', 'wts-theme-switcher' ),
+					'pluginName'          => __( 'WP Theme Switcher', 'wpts-theme-switcher' ),
+					'settingsTitle'       => __( 'Settings', 'wpts-theme-switcher' ),
+					'viewDocs'            => __( 'View Documentation', 'wpts-theme-switcher' ),
 					
 					// Tabs.
-					'generalTab'          => __( 'General', 'wts-theme-switcher' ),
-					'advancedTab'         => __( 'Advanced', 'wts-theme-switcher' ),
+					'generalTab'          => __( 'General', 'wpts-theme-switcher' ),
+					'advancedTab'         => __( 'Advanced', 'wpts-theme-switcher' ),
 					
 					// Post Types & Taxonomies.
 					//'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'smart-theme-switcher' ),
 					'selectTheme'         => __( 'Select theme', 'smart-theme-switcher' ),
 					
 					// Advanced settings.
-					'enableThemePreview'  => __( 'Enable Theme Preview', 'wts-theme-switcher' ),
-					'enableDebugging'     => __( 'Enable Debugging', 'wts-theme-switcher' ),
+					'enableThemePreview'  => __( 'Enable Theme Preview', 'wpts-theme-switcher' ),
+					'enableDebugging'     => __( 'Enable Debugging', 'wpts-theme-switcher' ),
 					
 					// Actions.
-					'save'                => __( 'Save Settings', 'wts-theme-switcher' ),
-					'saving'              => __( 'Saving...', 'wts-theme-switcher' ),
-					'saved'               => __( 'Settings Saved', 'wts-theme-switcher' ),
+					'save'                => __( 'Save Settings', 'wpts-theme-switcher' ),
+					'saving'              => __( 'Saving...', 'wpts-theme-switcher' ),
+					'saved'               => __( 'Settings Saved', 'wpts-theme-switcher' ),
 					
 					// Messages.
-					'loading'             => __( 'Loading...', 'wts-theme-switcher' ),
-					'error'               => __( 'Error Saving Settings', 'wts-theme-switcher' ),
-					'success'             => __( 'Settings saved successfully!', 'wts-theme-switcher' ),
-					'useActiveTheme'      => __( 'Use Active Theme', 'wts-theme-switcher' ),
+					'loading'             => __( 'Loading...', 'wpts-theme-switcher' ),
+					'error'               => __( 'Error Saving Settings', 'wpts-theme-switcher' ),
+					'success'             => __( 'Settings saved successfully!', 'wpts-theme-switcher' ),
+					'useActiveTheme'      => __( 'Use Active Theme', 'wpts-theme-switcher' ),
 				),
 			)
 		);

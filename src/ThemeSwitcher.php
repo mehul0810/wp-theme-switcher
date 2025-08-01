@@ -99,7 +99,7 @@ class ThemeSwitcher {
 	 * @param mixed $which
 	 */
 	public static function resolve_theme_filter( $current_value, $which ) {
-		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$settings = get_option( 'wpts_theme_switcher_settings', array() );
 		$themes   = array_keys( wp_get_themes() );
 		$post_id = self::get_post_id_early();
 		$theme_slug = false;
@@ -116,7 +116,7 @@ class ThemeSwitcher {
 
 		// 2. Post meta fallback (only if not in preview)
 		if ( ! $theme_slug && $post_id ) {
-			$post_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+			$post_theme = get_post_meta( $post_id, 'wpts_theme_switcher_active_theme', true );
 			if ( ! empty( $post_theme ) && in_array( $post_theme, $themes, true ) ) {
 				$theme_slug = $post_theme;
 			}
@@ -147,7 +147,7 @@ class ThemeSwitcher {
 				in_array( $tax_settings[ $taxonomy ]['theme'], $themes, true )
 			) {
 				$theme_slug = $tax_settings[ $taxonomy ]['theme'];
-				error_log( "STS: Theme found for taxonomy '$taxonomy' → '$theme_slug'" );
+				error_log( "WPTS: Theme found for taxonomy '$taxonomy' → '$theme_slug'" );
 			}
 		}
 
@@ -162,7 +162,7 @@ class ThemeSwitcher {
 		}
 
 		// Log for debugging
-		error_log("STS: $which | preview_theme: $preview_theme | post_id: $post_id | theme_slug: $theme_slug | template: ".$theme->get_template()." | stylesheet: ".$theme->get_stylesheet());
+		error_log("WPTS: $which | preview_theme: $preview_theme | post_id: $post_id | theme_slug: $theme_slug | template: ".$theme->get_template()." | stylesheet: ".$theme->get_stylesheet());
 
 		return ( $which === 'template' )
 			? $theme->get_template()
@@ -257,7 +257,7 @@ class ThemeSwitcher {
 
 	public function get_preview_theme_for_post( $post_id ) {
 		// 1. Check for theme set in post meta
-		$theme = get_post_meta( $post_id, 'wts_theme_switcher_active_theme', true );
+		$theme = get_post_meta( $post_id, 'wpts_theme_switcher_active_theme', true );
 	
 		if ( ! empty( $theme ) ) {
 			return $theme;
@@ -325,7 +325,7 @@ class ThemeSwitcher {
 		 * @param bool $can_preview Whether the current user can preview themes.
 		 */
 		return apply_filters(
-			'smart_theme_switcher_can_user_preview',
+			'wpts_theme_switcher_can_user_preview',
 			is_user_logged_in() && current_user_can( 'edit_posts' )
 		);
 	}
@@ -348,8 +348,8 @@ class ThemeSwitcher {
 		}
 		
 		// Add classes for preview mode
-		$classes[] = 'sts-preview-mode';
-		$classes[] = 'sts-preview-' . sanitize_html_class( $preview_theme );
+		$classes[] = 'wpts-preview-mode';
+		$classes[] = 'wpts-preview-' . sanitize_html_class( $preview_theme );
 		
 		return $classes;
 	}
@@ -383,45 +383,45 @@ class ThemeSwitcher {
 
 		// Enqueue preview CSS
 		wp_enqueue_style(
-			'sts-preview',
-			WTS_PLUGIN_URL . 'assets/dist/preview.css',
+			'wpts-preview',
+			WPTS_PLUGIN_URL . 'assets/dist/preview.css',
 			array(),
-			WTS_PLUGIN_VERSION
+			WPTS_PLUGIN_VERSION
 		);
 
 		// Enqueue preview banner-specific CSS
 		wp_enqueue_style(
-			'sts-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/preview-banner.css',
+			'wpts-preview-banner',
+			WPTS_PLUGIN_URL . 'assets/dist/preview-banner.css',
 			array(),
-			STS_PLUGIN_VERSION
+			WPTS_PLUGIN_VERSION
 		);
 
 		// Enqueue preview JS
 		wp_enqueue_script(
-			'sts-preview',
-			WTS_PLUGIN_URL . 'assets/dist/preview.js',
+			'wpts-preview',
+			WPTS_PLUGIN_URL . 'assets/dist/preview.js',
 			array( 'jquery' ),
-			WTS_PLUGIN_VERSION,
+			WPTS_PLUGIN_VERSION,
 			true
 		);
 
 		// Enqueue preview-banner specific JS
 		wp_enqueue_script(
-			'sts-preview-banner',
-			STS_PLUGIN_URL . 'assets/dist/preview-banner.js',
+			'wpts-preview-banner',
+			WPTS_PLUGIN_URL . 'assets/dist/preview-banner.js',
 			array( 'jquery' ),
-			STS_PLUGIN_VERSION,
+			WPTS_PLUGIN_VERSION,
 			true
 		);
 
 		// Localize script
 		wp_localize_script(
-			'sts-preview',
+			'wpts-preview',
 			'Preview',
 			array(
 				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'nonce'         => wp_create_nonce( 'sts-preview-nonce' ),
+				'nonce'         => wp_create_nonce( 'wpts-preview-nonce' ),
 				'currentTheme'  => $this->get_preview_theme(),
 				'queryParam'    => $this->get_query_param_name(),
 				'isPreviewMode' => (bool) $this->get_preview_theme(),
@@ -430,11 +430,11 @@ class ThemeSwitcher {
 
 		// Localize preview-banner script (if that’s where UI is handled)
 		wp_localize_script(
-			'sts-preview-banner',
+			'wpts-preview-banner',
 			'PreviewBanner',
 			array(
 				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'nonce'         => wp_create_nonce( 'sts-preview-banner-nonce' ),
+				'nonce'         => wp_create_nonce( 'wpts-preview-banner-nonce' ),
 				'currentUrl'    => esc_url( remove_query_arg( $this->get_query_param_name() ) ),
 				'queryParam'    => $this->get_query_param_name(),
 				'currentTheme'  => $preview_theme,
@@ -460,8 +460,8 @@ class ThemeSwitcher {
 
 		// Enqueue editor script
 		wp_enqueue_script(
-			'sts-editor',
-			WTS_PLUGIN_URL . 'assets/dist/individual.js',
+			'wpts-editor',
+			WPTS_PLUGIN_URL . 'assets/dist/individual.js',
 			array(
 				'wp-blocks',
 				'wp-element',
@@ -472,7 +472,7 @@ class ThemeSwitcher {
 				'wp-edit-post',
 				'wp-data',
 			),
-			WTS_PLUGIN_VERSION,
+			WPTS_PLUGIN_VERSION,
 			true
 		);
 
@@ -489,11 +489,11 @@ class ThemeSwitcher {
 
 		// Localize script
 		wp_localize_script(
-			'sts-editor',
+			'wpts-editor',
 			'stsEditor',
 			array(
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-				'nonce'        => wp_create_nonce( 'sts-editor-nonce' ),
+				'nonce'        => wp_create_nonce( 'wpts-editor-nonce' ),
 				'themes'       => $theme_options,
 				'currentUrl'   => get_preview_post_link(),
 				'queryParam'   => $this->get_query_param_name(),
@@ -511,7 +511,7 @@ class ThemeSwitcher {
 	public function register_post_meta() {
 		// Register meta for all public post types.
 		foreach ( get_post_types( array( 'public' => true ) ) as $post_type ) {
-			register_post_meta( $post_type, 'wts_theme_switcher_active_theme', array(
+			register_post_meta( $post_type, 'wpts_theme_switcher_active_theme', array(
 				'show_in_rest'      => true,
 				'single'            => true,
 				'type'              => 'string',
@@ -530,7 +530,7 @@ class ThemeSwitcher {
 	public function register_term_meta() {
 		// Register meta for all public taxonomies.
 		foreach ( get_taxonomies( array( 'public' => true ) ) as $taxonomy ) {
-			register_term_meta( $taxonomy, 'wts_theme_switcher_active_theme', array(
+			register_term_meta( $taxonomy, 'wpts_theme_switcher_active_theme', array(
 				'show_in_rest'      => true,
 				'single'            => true,
 				'type'              => 'string',
@@ -599,27 +599,27 @@ class ThemeSwitcher {
 	public function clear_theme_caches( $post_id = 0, $term_id = 0, $post_type = '', $taxonomy = '' ) {
 		// Clear specific caches if IDs or types provided
 		if ( $post_id ) {
-			wp_cache_delete( 'wts_post_' . $post_id, 'wts_theme_switcher' );
+			wp_cache_delete( 'wpts_post_' . $post_id, 'wpts_theme_switcher' );
 		}
 		
 		if ( $term_id ) {
-			wp_cache_delete( 'wts_term_' . $term_id, 'wts_theme_switcher' );
+			wp_cache_delete( 'wpts_term_' . $term_id, 'wpts_theme_switcher' );
 		}
 		
 		if ( $post_type ) {
-			wp_cache_delete( 'wts_post_type_' . $post_type, 'wts_theme_switcher' );
+			wp_cache_delete( 'wpts_post_type_' . $post_type, 'wpts_theme_switcher' );
 		}
 		
 		if ( $taxonomy ) {
-			wp_cache_delete( 'wts_taxonomy_' . $taxonomy, 'wts_theme_switcher' );
+			wp_cache_delete( 'wpts_taxonomy_' . $taxonomy, 'wpts_theme_switcher' );
 		}
 		
 		// Or clear all theme caches if no specific IDs/types provided
 		if ( ! $post_id && ! $term_id && ! $post_type && ! $taxonomy ) {
-			// Get all cache keys for wts_theme_switcher group and delete them
+			// Get all cache keys for wpts_theme_switcher group and delete them
 			// Since wp_cache_flush() is too broad, we have to use creative workarounds
 			// We'll use an action to allow other caching plugins to clear their caches
-			do_action( 'wts_theme_switcher_clear_caches' );
+			do_action( 'wpts_theme_switcher_clear_caches' );
 		}
 	}
 	
@@ -648,13 +648,13 @@ class ThemeSwitcher {
 		
 		// Check post edit screen
 		if ( 'post.php' === $pagenow && $post && isset( $_GET['action'] ) && 'edit' === $_GET['action'] ) {
-			$theme_slug = get_post_meta( $post->ID, 'wts_theme_switcher_active_theme', true );
+			$theme_slug = get_post_meta( $post->ID, 'wpts_theme_switcher_active_theme', true );
 			if ( ! empty( $theme_slug ) ) {
 				$theme = wp_get_theme( $theme_slug );
 				if ( ! $theme->exists() ) {
 					$missing_theme = $theme_slug;
 					$context = sprintf( 
-						__( 'the post "%s"', 'wts-theme-switcher' ),
+						__( 'the post "%s"', 'wpts-theme-switcher' ),
 						get_the_title( $post->ID )
 					);
 				}
@@ -667,14 +667,14 @@ class ThemeSwitcher {
 			$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_key( $_GET['taxonomy'] ) : '';
 			
 			if ( $term_id && $taxonomy ) {
-				$theme_slug = get_term_meta( $term_id, 'wts_theme_switcher_active_theme', true );
+				$theme_slug = get_term_meta( $term_id, 'wpts_theme_switcher_active_theme', true );
 				if ( ! empty( $theme_slug ) ) {
 					$theme = wp_get_theme( $theme_slug );
 					if ( ! $theme->exists() ) {
 						$missing_theme = $theme_slug;
 						$term = get_term( $term_id, $taxonomy );
 						$context = sprintf( 
-							__( 'the term "%s"', 'wts-theme-switcher' ),
+							__( 'the term "%s"', 'wpts-theme-switcher' ),
 							$term->name
 						);
 					}
@@ -683,9 +683,9 @@ class ThemeSwitcher {
 		}
 		
 		// Check settings page
-		if ( isset( $screen->id ) && 'settings_page_wts-theme-switcher' === $screen->id ) {
+		if ( isset( $screen->id ) && 'settings_page_wpts-theme-switcher' === $screen->id ) {
 			// Check post type settings
-			$settings = get_option( 'wts_theme_switcher_settings', array() );
+			$settings = get_option( 'wpts_theme_switcher_settings', array() );
 			
 			if ( isset( $settings['post_types'] ) && is_array( $settings['post_types'] ) ) {
 				foreach ( $settings['post_types'] as $post_type => $post_type_settings ) {
@@ -700,7 +700,7 @@ class ThemeSwitcher {
 							$missing_theme = $post_type_settings['theme'];
 							$post_type_obj = get_post_type_object( $post_type );
 							$context = sprintf( 
-								__( 'all "%s" post types', 'wts-theme-switcher' ),
+								__( 'all "%s" post types', 'wpts-theme-switcher' ),
 								$post_type_obj ? $post_type_obj->labels->name : $post_type
 							);
 							break;
@@ -723,7 +723,7 @@ class ThemeSwitcher {
 							$missing_theme = $taxonomy_settings['theme'];
 							$taxonomy_obj = get_taxonomy( $taxonomy );
 							$context = sprintf( 
-								__( 'all "%s" taxonomy archives', 'wts-theme-switcher' ),
+								__( 'all "%s" taxonomy archives', 'wpts-theme-switcher' ),
 								$taxonomy_obj ? $taxonomy_obj->labels->name : $taxonomy
 							);
 							break;
@@ -737,7 +737,7 @@ class ThemeSwitcher {
 		if ( $missing_theme && $context ) {
 			$notice = sprintf(
 				/* translators: 1: Theme name, 2: Context where theme is assigned */
-				__( '<strong>Warning:</strong> The theme "%1$s" is assigned to %2$s but is not installed or is broken. The default theme will be used instead.', 'wts-theme-switcher' ),
+				__( '<strong>Warning:</strong> The theme "%1$s" is assigned to %2$s but is not installed or is broken. The default theme will be used instead.', 'wpts-theme-switcher' ),
 				esc_html( $missing_theme ),
 				esc_html( $context )
 			);

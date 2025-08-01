@@ -44,10 +44,10 @@ final class Plugin {
 	 */
 	private function setup() {
 		// Register activation hook.
-		register_activation_hook( WTS_PLUGIN_FILE, array( $this, 'activate' ) );
+		register_activation_hook( WPTS_PLUGIN_FILE, array( $this, 'activate' ) );
 
 		// Register deactivation hook.
-		register_deactivation_hook( WTS_PLUGIN_FILE, array( $this, 'deactivate' ) );
+		register_deactivation_hook( WPTS_PLUGIN_FILE, array( $this, 'deactivate' ) );
 	}
 
 	/**
@@ -81,7 +81,7 @@ final class Plugin {
 		// Set default options.
 		$default_options = array(
 			'enable_preview'        => 'yes',
-			'preview_query_param'   => WTS_DEFAULT_QUERY_PARAM,
+			'preview_query_param'   => WPTS_DEFAULT_QUERY_PARAM,
 			'advanced'              => array(
 				'preview_enabled'     => true,
 				'debug_enabled'       => false,
@@ -89,7 +89,7 @@ final class Plugin {
 		);
 
 		// Add options if they don't exist.
-		add_option( 'wts_theme_switcher_settings', $default_options );
+		add_option( 'wpts_theme_switcher_settings', $default_options );
 
 		// Flush rewrite rules.
 		flush_rewrite_rules();
@@ -114,9 +114,9 @@ final class Plugin {
 	 */
 	public function load_textdomain() {
 		load_plugin_textdomain(
-			'wts-theme-switcher',
+			'wpts-theme-switcher',
 			false,
-			dirname( plugin_basename( WTS_PLUGIN_FILE ) ) . '/languages/'
+			dirname( plugin_basename( WPTS_PLUGIN_FILE ) ) . '/languages/'
 		);
 	}
 }

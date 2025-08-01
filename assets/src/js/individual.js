@@ -24,7 +24,7 @@ import { useState, useEffect } from '@wordpress/element';
 		// Get meta value
 		const meta = useSelect((select) => select('core/editor').getEditedPostAttribute('meta') || {}, []);
 		const { editPost } = useDispatch('core/editor');
-		const metaKey = 'wts_theme_switcher_active_theme';
+		const metaKey = 'wpts_theme_switcher_active_theme';
 		const currentValue = meta[metaKey] || '';
 		const [selectedTheme, setSelectedTheme] = useState(currentValue);
 
@@ -39,10 +39,10 @@ import { useState, useEffect } from '@wordpress/element';
 
 		return (
 			<SelectControl
-				label={__('Select a theme', 'wts-theme-switcher')}
+				label={__('Select a theme', 'wpts-theme-switcher')}
 				value={selectedTheme}
 				options={[
-					{ label: __('Use Active Theme', 'wts-theme-switcher'), value: '' },
+					{ label: __('Use Active Theme', 'wpts-theme-switcher'), value: '' },
 					...availableThemes
 				]}
 				onChange={handleChange}
@@ -52,11 +52,11 @@ import { useState, useEffect } from '@wordpress/element';
 
 	const ThemeMetaFieldSlot = () => {
 		// Insert in Document Settings panel
-		return <PluginDocumentSettingPanel name="wts-theme-switcher" title={__('WP Theme Switcher', 'wts-theme-switcher')} icon="admin-appearance"><ThemeMetaField /></PluginDocumentSettingPanel>;
+		return <PluginDocumentSettingPanel name="wpts-theme-switcher" title={__('WP Theme Switcher', 'wpts-theme-switcher')} icon="admin-appearance"><ThemeMetaField /></PluginDocumentSettingPanel>;
 	};
 
 	// Register the plugin
-	registerPlugin('wts-theme-switcher-theme-meta', {
+	registerPlugin('wpts-theme-switcher-theme-meta', {
 		render: ThemeMetaFieldSlot,
 		icon: 'admin-appearance',
 	});

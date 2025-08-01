@@ -40,7 +40,7 @@ class ThemeResolver {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		$this->settings = get_option( 'wts_theme_switcher_settings', array() );
+		$this->settings = get_option( 'wpts_theme_switcher_settings', array() );
 	}
 
 	/**
@@ -93,26 +93,26 @@ class ThemeResolver {
 		}
 
 		// Get from object cache if available
-		$cache_key = 'wts_post_' . $post_id;
-		$cached_theme = wp_cache_get( $cache_key, 'wts_theme_switcher' );
+		$cache_key = 'wpts_post_' . $post_id;
+		$cached_theme = wp_cache_get( $cache_key, 'wpts_theme_switcher' );
 		
 		if ( false !== $cached_theme ) {
 			return $cached_theme ?: false; // Convert empty string to false
 		}
 
-		$meta_theme = get_post_meta( $post_id, 'wts_theme_switcher_active_theme', true );
+		$meta_theme = get_post_meta( $post_id, 'wpts_theme_switcher_active_theme', true );
 		if ( ! empty( $meta_theme ) ) {
 			// Verify theme exists before using it
 			$theme_switcher = new \WpThemeSwitcher\ThemeSwitcher();
 			if ( $theme_switcher->is_valid_theme( $meta_theme ) ) {
 				// Cache the result
-				wp_cache_set( $cache_key, $meta_theme, 'wts_theme_switcher' );
+				wp_cache_set( $cache_key, $meta_theme, 'wpts_theme_switcher' );
 				return $meta_theme;
 			}
 		}
 
 		// Cache the negative result (no theme set)
-		wp_cache_set( $cache_key, '', 'wts_theme_switcher' );
+		wp_cache_set( $cache_key, '', 'wpts_theme_switcher' );
 		return false;
 	}
 
@@ -155,8 +155,8 @@ class ThemeResolver {
 		}
 		
 		// Get from object cache if available
-		$cache_key = 'wts_post_type_' . $post_type;
-		$cached_theme = wp_cache_get( $cache_key, 'wts_theme_switcher' );
+		$cache_key = 'wpts_post_type_' . $post_type;
+		$cached_theme = wp_cache_get( $cache_key, 'wpts_theme_switcher' );
 		
 		if ( false !== $cached_theme ) {
 			return $cached_theme ?: false; // Convert empty string to false
@@ -164,7 +164,7 @@ class ThemeResolver {
 		
 		// Check settings for this post type
 		if ( ! isset( $this->settings['post_types'] ) || ! is_array( $this->settings['post_types'] ) ) {
-			wp_cache_set( $cache_key, '', 'wts_theme_switcher' );
+			wp_cache_set( $cache_key, '', 'wpts_theme_switcher' );
 			return false;
 		}
 		
@@ -180,13 +180,13 @@ class ThemeResolver {
 			// Verify theme exists before using it
 			$theme_switcher = new \WpThemeSwitcher\ThemeSwitcher();
 			if ( $theme_switcher->is_valid_theme( $theme_slug ) ) {
-				wp_cache_set( $cache_key, $theme_slug, 'wts_theme_switcher' );
+				wp_cache_set( $cache_key, $theme_slug, 'wpts_theme_switcher' );
 				return $theme_slug;
 			}
 		}
 		
 		// Cache the negative result
-		wp_cache_set( $cache_key, '', 'wts_theme_switcher' );
+		wp_cache_set( $cache_key, '', 'wpts_theme_switcher' );
 		return false;
 	}
 
@@ -206,26 +206,26 @@ class ThemeResolver {
 		// 1. First check for individual term meta
 		if ( isset( $queried_object->term_id ) ) {
 			// Get from object cache if available
-			$cache_key = 'wts_term_' . $queried_object->term_id;
-			$cached_theme = wp_cache_get( $cache_key, 'wts_theme_switcher' );
+			$cache_key = 'wpts_term_' . $queried_object->term_id;
+			$cached_theme = wp_cache_get( $cache_key, 'wpts_theme_switcher' );
 			
 			if ( false !== $cached_theme ) {
 				return $cached_theme ?: false; // Convert empty string to false
 			}
 			
-			$meta_theme = get_term_meta( $queried_object->term_id, 'wts_theme_switcher_active_theme', true );
+			$meta_theme = get_term_meta( $queried_object->term_id, 'wpts_theme_switcher_active_theme', true );
 			if ( ! empty( $meta_theme ) ) {
 				// Verify theme exists before using it
 				$theme_switcher = new \WpThemeSwitcher\ThemeSwitcher();
 				if ( $theme_switcher->is_valid_theme( $meta_theme ) ) {
 					// Cache the result
-					wp_cache_set( $cache_key, $meta_theme, 'wts_theme_switcher' );
+					wp_cache_set( $cache_key, $meta_theme, 'wpts_theme_switcher' );
 					return $meta_theme;
 				}
 			}
 			
 			// Cache the negative result (no theme set)
-			wp_cache_set( $cache_key, '', 'wts_theme_switcher' );
+			wp_cache_set( $cache_key, '', 'wpts_theme_switcher' );
 		}
 		
 		// 2. Then check for taxonomy-level setting
@@ -259,7 +259,7 @@ class ThemeResolver {
 	 * @return string
 	 */
 	public function get_query_param_name() {
-		return isset( $this->settings['preview_query_param'] ) ? $this->settings['preview_query_param'] : WTS_DEFAULT_QUERY_PARAM;
+		return isset( $this->settings['preview_query_param'] ) ? $this->settings['preview_query_param'] : WPTS_DEFAULT_QUERY_PARAM;
 	}
 
 	/**

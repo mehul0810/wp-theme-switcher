@@ -14,7 +14,7 @@ import '../css/preview-banner.css';
      */
     function initPreviewBanner() {
         // Add event listener to theme selector in banner
-        $('#sts-theme-select').on('change', function() {
+        $('#wpts-theme-select').on('change', function() {
             const selectedTheme = $(this).val();
             
             if (!selectedTheme) {
@@ -37,24 +37,24 @@ import '../css/preview-banner.css';
         });
 
         // Make the banner draggable
-        if ($.fn.draggable && $('#sts-preview-banner').length) {
-            $('#sts-preview-banner').draggable({
+        if ($.fn.draggable && $('#wpts-preview-banner').length) {
+            $('#wpts-preview-banner').draggable({
                 axis: 'y',
                 containment: 'window',
-                handle: '.sts-preview-banner-inner'
+                handle: '.wpts-preview-banner-inner'
             });
         }
 
         // Add a close button for the compatibility notice
-        if ($('#sts-compatibility-notice').length) {
-            const $noticeDiv = $('#sts-compatibility-notice');
+        if ($('#wpts-compatibility-notice').length) {
+            const $noticeDiv = $('#wpts-compatibility-notice');
             const $closeButton = $('<button>', {
-                class: 'sts-notice-close',
+                class: 'wpts-notice-close',
                 html: '&times;',
                 title: 'Dismiss notice'
             });
 
-            $noticeDiv.find('.sts-notice-inner').append($closeButton);
+            $noticeDiv.find('.wpts-notice-inner').append($closeButton);
 
             $closeButton.on('click', function() {
                 $noticeDiv.fadeOut(300, function() {

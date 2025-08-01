@@ -18,14 +18,14 @@
 }
 
 /* Main app container */
-#sts-settings-app {
+#wpts-settings-app {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     color: #1e1e1e;
     max-width: 100%;
 }
 
 /* Header styles */
-.sts-settings-header {
+.wpts-settings-header {
     background-color: #fff;
     padding: 0 16px;
     border-bottom: 1px solid #e0e0e0;
@@ -37,29 +37,29 @@
     height: 60px;
 }
 
-.sts-settings-header-left {
+.wpts-settings-header-left {
     display: flex;
     align-items: center;
 }
 
-.sts-settings-header-right {
+.wpts-settings-header-right {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-.sts-plugin-name {
+.wpts-plugin-name {
     font-size: 16px;
     font-weight: 600;
     margin-right: 24px;
 }
 
-.sts-page-title {
+.wpts-page-title {
     font-size: 14px;
     color: #757575;
 }
 
-.sts-version-badge {
+.wpts-version-badge {
     font-size: 12px;
     background-color: #f0f0f0;
     padding: 4px 8px;
@@ -67,7 +67,7 @@
     color: #555;
 }
 
-.sts-doc-link {
+.wpts-doc-link {
     text-decoration: none;
     color: #007cba;
     display: flex;
@@ -76,28 +76,28 @@
     font-size: 13px;
 }
 
-.sts-doc-link:hover {
+.wpts-doc-link:hover {
     color: #00669b;
     text-decoration: underline;
 }
 
-.sts-settings-tabs .components-tab-panel__tabs {
+.wpts-settings-tabs .components-tab-panel__tabs {
     background-color: #fff;
 }
 
 /* Content area */
-.sts-settings-content {
+.wpts-settings-content {
     padding: 0 24px 45px;
     max-width: 960px;
     margin: 0 auto;
 }
 
-.sts-settings-content .notice { 
+.wpts-settings-content .notice { 
     margin: 0px 0px 24px 0px;
 }
 
 /* Loading state */
-.sts-settings-loading {
+.wpts-settings-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -105,20 +105,20 @@
     padding: 80px 0;
 }
 
-.sts-settings-loading p {
+.wpts-settings-loading p {
     margin-top: 16px;
     color: #757575;
 }
 
 /* Panel styles */
-.sts-panel-header {
+.wpts-panel-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
 }
 
-.sts-panel-header-right {
+.wpts-panel-header-right {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -126,32 +126,32 @@
 }
 
 /* Tabs container */
-.sts-tabs-container {
+.wpts-tabs-container {
     margin-bottom: 24px;
 }
 
 /* Post types and taxonomies panels */
-.sts-post-type-panel,
-.sts-taxonomy-panel {
+.wpts-post-type-panel,
+.wpts-taxonomy-panel {
     margin-bottom: 16px;
 }
 
-.sts-post-type-panel .components-panel__row,
-.sts-taxonomy-panel .components-panel__row {
+.wpts-post-type-panel .components-panel__row,
+.wpts-taxonomy-panel .components-panel__row {
     margin-bottom: 16px;
 }
 
 /* Advanced Tab */
-.sts-advanced-panel {
+.wpts-advanced-panel {
     background: #fff;
     margin-top: 20px;
 }
-.sts-advanced-panel .components-card__body {
+.wpts-advanced-panel .components-card__body {
     padding: 20px;
 }
 
 /* Footer */
-.sts-settings-footer {
+.wpts-settings-footer {
     margin-top: 32px;
     display: flex;
     justify-content: flex-end;
@@ -159,23 +159,23 @@
 
 /* Responsive adjustments */
 @media screen and (max-width: 782px) {
-    .sts-panel-header {
+    .wpts-panel-header {
         flex-direction: column;
         align-items: flex-start;
     }
     
-    .sts-panel-header-right {
+    .wpts-panel-header-right {
         margin-top: 12px;
         width: 100%;
     }
     
-    .sts-toggle-dropdown-group {
+    .wpts-toggle-dropdown-group {
         flex-direction: column;
         align-items: flex-start;
         width: 100%;
     }
     
-    .sts-toggle-dropdown-group .components-base-control {
+    .wpts-toggle-dropdown-group .components-base-control {
         width: 100%;
     }
 }

@@ -55,8 +55,8 @@ class Settings {
 	public function register_settings() {
 		// Register the new option
 		register_setting(
-			'wts_theme_switcher_settings',
-			'wts_theme_switcher_settings',
+			'wpts_theme_switcher_settings',
+			'wpts_theme_switcher_settings',
 			array(
 				'sanitize_callback' => array( $this, 'sanitize_settings' ),
 				'show_in_rest'      => true,
@@ -72,7 +72,7 @@ class Settings {
 	 */
 	public function register_rest_routes() {
 		register_rest_route(
-			'wts-theme-switcher/v1',
+			'wpts-theme-switcher/v1',
 			'/settings',
 			array(
 				array(
@@ -103,7 +103,7 @@ class Settings {
 		);
 
 		register_rest_route(
-			'wts-theme-switcher/v1',
+			'wpts-theme-switcher/v1',
 			'/post-types',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -113,7 +113,7 @@ class Settings {
 		);
 
 		register_rest_route(
-			'wts-theme-switcher/v1',
+			'wpts-theme-switcher/v1',
 			'/taxonomies',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -123,7 +123,7 @@ class Settings {
 		);
 
 		register_rest_route(
-			'wts-theme-switcher/v1',
+			'wpts-theme-switcher/v1',
 			'/themes',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -177,7 +177,7 @@ class Settings {
 		if ( empty( $settings ) ) {
 			return new \WP_Error(
 				'settings_not_found',
-				__( 'Settings could not be retrieved.', 'wts-theme-switcher' ),
+				__( 'Settings could not be retrieved.', 'wpts-theme-switcher' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -245,7 +245,7 @@ class Settings {
 
 		// Format themes for dropdown.
 		$formatted_themes = array(
-			'use_active' => __( 'Use Active Theme', 'wts-theme-switcher' ),
+			'use_active' => __( 'Use Active Theme', 'wpts-theme-switcher' ),
 		);
 
 		// Add all other themes.
@@ -278,7 +278,7 @@ class Settings {
 		$sanitized_settings = $this->sanitize_settings( $settings );
 		
 		// Update the settings
-		update_option( 'wts_theme_switcher_settings', $sanitized_settings );
+		update_option( 'wpts_theme_switcher_settings', $sanitized_settings );
 		
 		// Clear theme caches when settings are updated
 		$theme_switcher = new ThemeSwitcher();
@@ -362,7 +362,7 @@ class Settings {
 	 */
 	public function get_settings() {
 		// Always use the unified option key
-		$settings = get_option( 'wts_theme_switcher_settings', array() );
+		$settings = get_option( 'wpts_theme_switcher_settings', array() );
 		return is_array( $settings ) ? $settings : array();
 	}
 

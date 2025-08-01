@@ -5,34 +5,34 @@
  */
 
 /* Theme preview badge for admin bar */
-#wpadminbar #wp-admin-bar-sts-preview.sts-preview-node > .ab-item {
+#wpadminbar #wp-admin-bar-wpts-preview.wpts-preview-node > .ab-item {
     background-color: #d54e21;
     color: #fff;
     font-weight: bold;
 }
 
-#wpadminbar #wp-admin-bar-sts-exit-preview.sts-exit-preview-link > .ab-item {
+#wpadminbar #wp-admin-bar-wpts-exit-preview.wpts-exit-preview-link > .ab-item {
     color: #fff;
     font-weight: bold;
 }
 
-#wpadminbar #wp-admin-bar-sts-preview .ab-sub-wrapper .ab-item {
+#wpadminbar #wp-admin-bar-wpts-preview .ab-sub-wrapper .ab-item {
     color: #b4b9be;
 }
 
-#wpadminbar #wp-admin-bar-sts-preview .sts-current-theme > .ab-item {
+#wpadminbar #wp-admin-bar-wpts-preview .wpts-current-theme > .ab-item {
     font-weight: bold;
     color: #00b9eb;
 }
 
 /* Add a subtle indicator to the editing screen when previewing */
-body.sts-preview-mode {
+body.wpts-preview-mode {
     position: relative;
     /* Add padding to body to account for preview banner */
     padding-top: 48px !important;
 }
 
-body.sts-preview-mode::after {
+body.wpts-preview-mode::after {
     content: '';
     position: fixed;
     top: 0;
@@ -44,12 +44,12 @@ body.sts-preview-mode::after {
 }
 
 /* Hide the indicator in the admin area, except in preview frame */
-body.wp-admin:not(iframe#content-iframe) body.sts-preview-mode::after {
+body.wp-admin:not(iframe#content-iframe) body.wpts-preview-mode::after {
     display: none;
 }
 
 /* Preview Banner */
-.sts-preview-banner {
+.wpts-preview-banner {
     position: fixed;
     top: 0;
     left: 0;
@@ -66,7 +66,7 @@ body.wp-admin:not(iframe#content-iframe) body.sts-preview-mode::after {
     justify-content: center;
 }
 
-.sts-preview-banner-inner {
+.wpts-preview-banner-inner {
     width: 100%;
     max-width: 1200px;
     display: flex;
@@ -74,22 +74,22 @@ body.wp-admin:not(iframe#content-iframe) body.sts-preview-mode::after {
     padding: 0 16px;
 }
 
-.sts-preview-label {
+.wpts-preview-label {
     margin-right: 8px;
 }
 
-.sts-preview-theme-name {
+.wpts-preview-theme-name {
     color: #00b9eb;
     margin-right: 16px;
 }
 
-.sts-preview-controls {
+.wpts-preview-controls {
     display: flex;
     align-items: center;
     margin-left: auto;
 }
 
-.sts-theme-select {
+.wpts-theme-select {
     margin-right: 12px;
     min-width: 200px;
     height: 30px;
@@ -100,7 +100,7 @@ body.wp-admin:not(iframe#content-iframe) body.sts-preview-mode::after {
     color: #32373c;
 }
 
-.sts-exit-preview-button {
+.wpts-exit-preview-button {
     background-color: #d54e21 !important;
     color: #fff !important;
     border-color: #d54e21 !important;
@@ -111,43 +111,43 @@ body.wp-admin:not(iframe#content-iframe) body.sts-preview-mode::after {
     box-shadow: none !important;
 }
 
-.sts-exit-preview-button:hover,
-.sts-exit-preview-button:focus {
+.wpts-exit-preview-button:hover,
+.wpts-exit-preview-button:focus {
     background-color: #be3c13 !important;
     color: #fff !important;
     border-color: #be3c13 !important;
 }
 
 /* Adjust for admin bar */
-.admin-bar .sts-preview-banner {
+.admin-bar .wpts-preview-banner {
     top: 32px;
 }
 
-.admin-bar body.sts-preview-mode {
+.admin-bar body.wpts-preview-mode {
     padding-top: 80px !important;
 }
 
 /* Mobile adjustments */
 @media screen and (max-width: 782px) {
-    .admin-bar .sts-preview-banner {
+    .admin-bar .wpts-preview-banner {
         top: 46px;
     }
     
-    .sts-preview-banner-inner {
+    .wpts-preview-banner-inner {
         flex-wrap: wrap;
     }
     
-    .sts-preview-controls {
+    .wpts-preview-controls {
         margin-left: 0;
         margin-top: 8px;
         width: 100%;
     }
     
-    body.sts-preview-mode {
+    body.wpts-preview-mode {
         padding-top: 88px !important;
     }
     
-    .admin-bar body.sts-preview-mode {
+    .admin-bar body.wpts-preview-mode {
         padding-top: 134px !important;
     }
 }

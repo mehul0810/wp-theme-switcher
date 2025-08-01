@@ -19,7 +19,7 @@ import '../css/preview.css';
      */
     function initPreview() {
         // Add event listener to theme selector in banner
-        $('#sts-theme-select').on('change', function() {
+        $('#wpts-theme-select').on('change', function() {
             const selectedTheme = $(this).val();
             
             if (!selectedTheme) {

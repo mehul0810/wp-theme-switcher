@@ -42,7 +42,7 @@ class Frontend {
 	 */
 	private function init_hooks() {
 		$theme_switcher = new ThemeSwitcher();
-		$settings = get_option( 'wts_theme_switcher_settings', array() );
+		$settings = get_option( 'wpts_theme_switcher_settings', array() );
 		$preview_enabled = isset( $settings['enable_preview'] ) && $settings['enable_preview'] === 'yes';
 		$preview_theme = $theme_switcher->get_preview_theme();
 
@@ -79,18 +79,18 @@ class Frontend {
 		// Get current URL without query parameters.
 		$current_url = remove_query_arg( $theme_switcher->get_query_param_name() ); 
 		?>
-		<div id="sts-preview-banner" class="sts-preview-banner frontend">
-			<div class="sts-preview-banner-inner">
-				<div class="sts-preview-info">
-					<span class="sts-preview-label"><?php esc_html_e( 'Preview Mode:', 'wts-theme-switcher' ); ?></span>
-					<span class="sts-preview-theme"><?php echo esc_html( $preview_theme->get( 'Name' ) ); ?></span>
+		<div id="wpts-preview-banner" class="wpts-preview-banner frontend">
+			<div class="wpts-preview-banner-inner">
+				<div class="wpts-preview-info">
+					<span class="wpts-preview-label"><?php esc_html_e( 'Preview Mode:', 'wpts-theme-switcher' ); ?></span>
+					<span class="wpts-preview-theme"><?php echo esc_html( $preview_theme->get( 'Name' ) ); ?></span>
 				</div>
 				
-				<div class="sts-preview-actions">
-					<div class="sts-theme-select-wrapper">
-						<label for="sts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'wts-theme-switcher' ); ?></label>
-						<select id="sts-theme-select" class="sts-theme-select">
-							<option value=""><?php esc_html_e( 'Switch Theme...', 'wts-theme-switcher' ); ?></option>
+				<div class="wpts-preview-actions">
+					<div class="wpts-theme-select-wrapper">
+						<label for="wpts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'wpts-theme-switcher' ); ?></label>
+						<select id="wpts-theme-select" class="wpts-theme-select">
+							<option value=""><?php esc_html_e( 'Switch Theme...', 'wpts-theme-switcher' ); ?></option>
 							<?php foreach ( $themes as $slug => $name ) : ?>
 								<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $slug, $preview_theme_slug ); ?>>
 									<?php echo esc_html( $name ); ?>
@@ -99,8 +99,8 @@ class Frontend {
 						</select>
 					</div>
 					
-					<a href="<?php echo esc_url( $current_url ); ?>" class="sts-exit-preview-button button button-secondary">
-						<?php esc_html_e( 'Exit Preview', 'wts-theme-switcher' ); ?>
+					<a href="<?php echo esc_url( $current_url ); ?>" class="wpts-exit-preview-button button button-secondary">
+						<?php esc_html_e( 'Exit Preview', 'wpts-theme-switcher' ); ?>
 					</a>
 				</div>
 			</div>
@@ -134,13 +134,13 @@ class Frontend {
 		// Only show notice if there's a mismatch.
 		if ( $preview_is_block !== $active_is_block ) {
 			$message = $preview_is_block
-				? __( 'You are previewing a block theme while your active theme is classic. Some layouts may appear differently.', 'wts-theme-switcher' )
-				: __( 'You are previewing a classic theme while your active theme is block-based. Some layouts may appear differently.', 'wts-theme-switcher' );
+				? __( 'You are previewing a block theme while your active theme is classic. Some layouts may appear differently.', 'wpts-theme-switcher' )
+				: __( 'You are previewing a classic theme while your active theme is block-based. Some layouts may appear differently.', 'wpts-theme-switcher' );
 			
 			// Output notice.
 			?>
-			<div id="sts-compatibility-notice" class="sts-compatibility-notice">
-				<div class="sts-notice-inner">
+			<div id="wpts-compatibility-notice" class="wpts-compatibility-notice">
+				<div class="wpts-notice-inner">
 					<span class="dashicons dashicons-info"></span>
 					<p><?php echo esc_html( $message ); ?></p>
 				</div>

@@ -36,16 +36,16 @@ import '../css/settings.css';
      */
     const Header = () => {
         return (
-            <div className="sts-settings-header">
-                <div className="sts-settings-header-left">
-                    <div className="sts-plugin-name">{stsSettings.strings.pluginName}</div>
-                    <div className="sts-page-title">{stsSettings.strings.settingsTitle}</div>
+            <div className="wpts-settings-header">
+                <div className="wpts-settings-header-left">
+                    <div className="wpts-plugin-name">{wptsSettings.strings.pluginName}</div>
+                    <div className="wpts-page-title">{wptsSettings.strings.settingsTitle}</div>
                 </div>
-                <div className="sts-settings-header-right">
-                    <ExternalLink href={stsSettings.docUrl} className="sts-doc-link">
-                        {stsSettings.strings.viewDocs}
+                <div className="wpts-settings-header-right">
+                    <ExternalLink href={wptsSettings.docUrl} className="wpts-doc-link">
+                        {wptsSettings.strings.viewDocs}
                     </ExternalLink>
-                    <span className="sts-version-badge">v{stsSettings.version}</span>
+                    <span className="wpts-version-badge">v{wptsSettings.version}</span>
                 </div>
             </div>
         );
@@ -58,19 +58,19 @@ import '../css/settings.css';
         const postTypeSettings = settings.post_types[postType.name] || { enabled: false, theme: 'use_active' };
         
         return (
-            <Panel className="sts-post-type-panel">
+            <Panel className="wpts-post-type-panel">
                 <PanelBody 
                     title={postType.label}
                     initialOpen={postTypeSettings.enabled}
                 >
-                    <div className="sts-panel-header">
-                        <div className="sts-panel-header-right">
-                            <div className="sts-toggle-dropdown-group">
+                    <div className="wpts-panel-header">
+                        <div className="wpts-panel-header-right">
+                            <div className="wpts-toggle-dropdown-group">
                                 <SelectControl
-                                    label={stsSettings.strings.selectTheme}
+                                    label={wptsSettings.strings.selectTheme}
                                     value={postTypeSettings.theme}
                                     options={[
-                                        { label: stsSettings.strings.useActiveTheme, value: 'use_active' },
+                                        { label: wptsSettings.strings.useActiveTheme, value: 'use_active' },
                                         ...Object.entries(settings.themes || {})
                                             .filter(([key]) => key !== 'use_active')
                                             .map(([value, label]) => ({
@@ -103,19 +103,19 @@ import '../css/settings.css';
         const taxonomySettings = settings.taxonomies[taxonomy.name] || { enabled: false, theme: 'use_active' };
         
         return (
-            <Panel className="sts-taxonomy-panel">
+            <Panel className="wpts-taxonomy-panel">
                 <PanelBody 
                     title={taxonomy.label}
                     initialOpen={taxonomySettings.enabled}
                 >
-                    <div className="sts-panel-header">
-                        <div className="sts-panel-header-right">
-                            <div className="sts-toggle-dropdown-group">
+                    <div className="wpts-panel-header">
+                        <div className="wpts-panel-header-right">
+                            <div className="wpts-toggle-dropdown-group">
                                 <SelectControl
-                                    label={stsSettings.strings.selectTheme}
+                                    label={wptsSettings.strings.selectTheme}
                                     value={taxonomySettings.theme}
                                     options={[
-                                        { label: stsSettings.strings.useActiveTheme, value: 'use_active' },
+                                        { label: wptsSettings.strings.useActiveTheme, value: 'use_active' },
                                         ...Object.entries(settings.themes || {})
                                             .filter(([key]) => key !== 'use_active')
                                             .map(([value, label]) => ({
@@ -150,8 +150,8 @@ import '../css/settings.css';
         const safeTaxonomies = (settings && typeof settings.taxonomies === 'object' && settings.taxonomies !== null) ? settings.taxonomies : {};
 
         return (
-            <div className="sts-general-tab">
-                <h3>{__('Post Types', 'wts-theme-switcher')}</h3>
+            <div className="wpts-general-tab">
+                <h3>{__('Post Types', 'wpts-theme-switcher')}</h3>
                 {Object.values(postTypes).map((postType) => (
                     <PostTypePanel 
                         key={postType.name}
@@ -161,7 +161,7 @@ import '../css/settings.css';
                     />
                 ))}
                 
-                <h3>{__('Taxonomies', 'wts-theme-switcher')}</h3>
+                <h3>{__('Taxonomies', 'wpts-theme-switcher')}</h3>
                 {Object.values(taxonomies).map((taxonomy) => (
                     <TaxonomyPanel
                         key={taxonomy.name}
@@ -181,11 +181,11 @@ import '../css/settings.css';
         const advancedSettings = settings.advanced || { preview_enabled: true, debug_enabled: false };
         
         return (
-            <div className="sts-advanced-tab">
-                <Card className="sts-advanced-panel">
+            <div className="wpts-advanced-tab">
+                <Card className="wpts-advanced-panel">
                     <CardBody>
                         <ToggleControl
-                            label={stsSettings.strings.enableThemePreview}
+                            label={wptsSettings.strings.enableThemePreview}
                             checked={advancedSettings.preview_enabled}
                             onChange={(preview_enabled) => {
                                 onSettingChange('advanced', {
@@ -195,7 +195,7 @@ import '../css/settings.css';
                             }}
                         />
                         <ToggleControl
-                            label={stsSettings.strings.enableDebugging}
+                            label={wptsSettings.strings.enableDebugging}
                             checked={advancedSettings.debug_enabled}
                             onChange={(debug_enabled) => {
                                 onSettingChange('advanced', {
@@ -226,7 +226,7 @@ import '../css/settings.css';
             // Legacy settings for backward compatibility
             enable_preview_banner: 'yes',
             default_preview_theme: '',
-            preview_query_param: 'wts_theme'
+            preview_query_param: 'wpts_theme'
         });
         
         const [postTypes, setPostTypes] = useState({});
@@ -247,17 +247,17 @@ import '../css/settings.css';
         // Load settings and data on component mount
         useEffect(() => {
             Promise.all([
-                fetch(`${stsSettings.restUrl}/settings`, {
-                    headers: { 'X-WP-Nonce': stsSettings.nonce }
+                fetch(`${wptsSettings.restUrl}/settings`, {
+                    headers: { 'X-WP-Nonce': wptsSettings.nonce }
                 }).then(response => response.json()),
-                fetch(`${stsSettings.restUrl}/post-types`, {
-                    headers: { 'X-WP-Nonce': stsSettings.nonce }
+                fetch(`${wptsSettings.restUrl}/post-types`, {
+                    headers: { 'X-WP-Nonce': wptsSettings.nonce }
                 }).then(response => response.json()),
-                fetch(`${stsSettings.restUrl}/taxonomies`, {
-                    headers: { 'X-WP-Nonce': stsSettings.nonce }
+                fetch(`${wptsSettings.restUrl}/taxonomies`, {
+                    headers: { 'X-WP-Nonce': wptsSettings.nonce }
                 }).then(response => response.json()),
-                fetch(`${stsSettings.restUrl}/themes`, {
-                    headers: { 'X-WP-Nonce': stsSettings.nonce }
+                fetch(`${wptsSettings.restUrl}/themes`, {
+                    headers: { 'X-WP-Nonce': wptsSettings.nonce }
                 }).then(response => response.json())
             ])
             .then(([settingsData, postTypesData, taxonomiesData, themesData]) => {
@@ -279,7 +279,7 @@ import '../css/settings.css';
                 console.error('Error loading data:', error);
                 setNotice({
                     status: 'error',
-                    message: stsSettings.strings.error
+                    message: wptsSettings.strings.error
                 });
                 setIsLoading(false);
             });
@@ -315,11 +315,11 @@ import '../css/settings.css';
             setIsSaving(true);
             setNotice({ status: '', message: '' });
 
-            fetch(`${stsSettings.restUrl}/settings`, {
+            fetch(`${wptsSettings.restUrl}/settings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-WP-Nonce': stsSettings.nonce
+                    'X-WP-Nonce': wptsSettings.nonce
                 },
                 body: JSON.stringify(settings)
             })
@@ -328,12 +328,12 @@ import '../css/settings.css';
                 if (response.success) {
                     setNotice({
                         status: 'success',
-                        message: response.message || stsSettings.strings.success
+                        message: response.message || wptsSettings.strings.success
                     });
                 } else {
                     setNotice({
                         status: 'error',
-                        message: response.message || stsSettings.strings.error
+                        message: response.message || wptsSettings.strings.error
                     });
                 }
                 setIsSaving(false);
@@ -342,7 +342,7 @@ import '../css/settings.css';
                 console.error('Error saving settings:', error);
                 setNotice({
                     status: 'error',
-                    message: stsSettings.strings.error
+                    message: wptsSettings.strings.error
                 });
                 setIsSaving(false);
             });
@@ -351,12 +351,12 @@ import '../css/settings.css';
         // If still loading, show spinner
         if (isLoading) {
             return (
-                <div className="sts-settings-app">
+                <div className="wpts-settings-app">
                     <Header />
-                    <div className="sts-settings-content">
-                        <Placeholder className="sts-settings-loading">
+                    <div className="wpts-settings-content">
+                        <Placeholder className="wpts-settings-loading">
                             <Spinner />
-                            <p>{stsSettings.strings.loading}</p>
+                            <p>{wptsSettings.strings.loading}</p>
                         </Placeholder>
                     </div>
                 </div>
@@ -364,32 +364,32 @@ import '../css/settings.css';
         }
 
         return (
-            <div className="sts-settings-app">
+            <div className="wpts-settings-app">
                 <Header />
                 
-                <div className="sts-settings-content">
+                <div className="wpts-settings-content">
                     {notice.status && (
                         <div className={`notice notice-${notice.status} is-dismissible`}>
                             <p>{notice.message}</p>
                         </div>
                     )}
                     
-                    <div className="sts-tabs-container">
+                    <div className="wpts-tabs-container">
                         <TabPanel
-                            className="sts-settings-tabs"
+                            className="wpts-settings-tabs"
                             activeClass="is-active"
                             initialTabName={activeTab}
                             onSelect={(tabName) => setActiveTab(tabName)}
                             tabs={[
                                 {
                                     name: 'general',
-                                    title: stsSettings.strings.generalTab,
-                                    className: 'sts-tab-general',
+                                    title: wptsSettings.strings.generalTab,
+                                    className: 'wpts-tab-general',
                                 },
                                 {
                                     name: 'advanced',
-                                    title: stsSettings.strings.advancedTab,
-                                    className: 'sts-tab-advanced',
+                                    title: wptsSettings.strings.advancedTab,
+                                    className: 'wpts-tab-advanced',
                                 }
                             ]}
                         >
@@ -417,14 +417,14 @@ import '../css/settings.css';
                         </TabPanel>
                     </div>
                     
-                    <div className="sts-settings-footer">
+                    <div className="wpts-settings-footer">
                         <Button 
                             isPrimary 
                             onClick={saveSettings}
                             isBusy={isSaving}
                             disabled={isSaving}
                         >
-                            {isSaving ? stsSettings.strings.saving : stsSettings.strings.save}
+                            {isSaving ? wptsSettings.strings.saving : wptsSettings.strings.save}
                         </Button>
                     </div>
                 </div>
@@ -434,7 +434,7 @@ import '../css/settings.css';
 
     // Render the app
     document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('sts-settings-app');
+        const container = document.getElementById('wpts-settings-app');
         if (container) {
             render(<SettingsApp />, container);
         }
