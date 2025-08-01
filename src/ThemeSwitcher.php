@@ -41,6 +41,15 @@ class ThemeSwitcher {
 	 */
 	private $theme_resolver;
 
+	private static $instance = null;
+
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
 	/**
 	 * Constructor.
 	 *
@@ -62,10 +71,14 @@ class ThemeSwitcher {
 	 */
 	private function init_hooks() {
 		
+		add_filter( 'template', function( $template ) {
+			return ThemeSwitcher::resolve_theme_filter( $template, 'template' );
+		} );
+		add_filter( 'stylesheet', function( $stylesheet ) {
+			return ThemeSwitcher::resolve_theme_filter( $stylesheet, 'stylesheet' );
+		} );
+
 		// Theme Set Mode hooks (affects all users)
-		add_filter( 'template', [ $this, 'resolve_template' ] );
-		add_filter( 'stylesheet', [ $this, 'resolve_stylesheet' ] );
-		
 		add_filter( 'body_class', array( $this, 'add_preview_body_class' ) );
 		
 		// General hooks (for both modes)
@@ -78,6 +91,156 @@ class ThemeSwitcher {
 		add_action( 'admin_notices', array( $this, 'maybe_show_theme_missing_notice' ) );
 
 		add_filter( 'preview_post_link', [ $this, 'add_preview_theme_param_to_preview_link' ], 10, 2 );
+	}
+
+	/**
+	 * Summary of resolve_theme_filter
+	 * @param mixed $current_value
+	 * @param mixed $which
+	 */
+	public static function resolve_theme_filter( $current_value, $which ) {
+		$settings = get_option( 'smart_theme_switcher_settings', array() );
+		$themes   = array_keys( wp_get_themes() );
+		$post_id = self::get_post_id_early();
+		$theme_slug = false;
+		$preview_theme = '';
+
+		// 1. Preview mode support
+		$instance = self::get_instance();
+		if ( method_exists( $instance, 'get_preview_theme' ) ) {
+			$preview_theme = $instance->get_preview_theme();
+			if ( ! empty( $preview_theme ) && in_array( $preview_theme, $themes, true ) ) {
+				$theme_slug = $preview_theme;
+			}
+		}
+
+		// 2. Post meta fallback (only if not in preview)
+		if ( ! $theme_slug && $post_id ) {
+			$post_theme = get_post_meta( $post_id, 'smart_theme_switcher_active_theme', true );
+			if ( ! empty( $post_theme ) && in_array( $post_theme, $themes, true ) ) {
+				$theme_slug = $post_theme;
+			}
+		}
+
+		// 3. Global settings fallback
+		if ( ! $theme_slug && ! empty( $settings['post_types'] ) && $post_id ) {
+			$post_data = get_post( $post_id );
+			if ( $post_data ) {
+				foreach ( $settings['post_types'] as $post_type => $setting ) {
+					if ( $post_data->post_type === $post_type ) {
+						if ( ! empty( $setting['theme'] ) && in_array( $setting['theme'], $themes, true ) ) {
+							$theme_slug = $setting['theme'];
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// 4. Taxonomy archive fallback (category, tag, custom taxonomy)
+		if ( ! $theme_slug && ! empty( $settings['taxonomies'] ) ) {
+			$taxonomy = self::get_taxonomy_early();
+			$tax_settings = $settings['taxonomies'] ?? [];
+
+			if ( $taxonomy && 
+				isset( $tax_settings[ $taxonomy ]['theme'] ) &&
+				in_array( $tax_settings[ $taxonomy ]['theme'], $themes, true )
+			) {
+				$theme_slug = $tax_settings[ $taxonomy ]['theme'];
+				error_log( "STS: Theme found for taxonomy '$taxonomy' → '$theme_slug'" );
+			}
+		}
+
+		// Final fallback
+		if ( ! $theme_slug ) {
+			return $current_value;
+		}
+
+		$theme = wp_get_theme( $theme_slug );
+		if ( ! $theme->exists() ) {
+			return $current_value;
+		}
+
+		// Log for debugging
+		error_log("STS: $which | preview_theme: $preview_theme | post_id: $post_id | theme_slug: $theme_slug | template: ".$theme->get_template()." | stylesheet: ".$theme->get_stylesheet());
+
+		return ( $which === 'template' )
+			? $theme->get_template()
+			: $theme->get_stylesheet();
+	}
+
+	/**
+	 * Get post ID early from query vars or request path.
+	 *
+	 * This is a helper function to get the post ID before the main query runs.
+	 * It checks query vars first, then tries to extract from the request path.
+	 *
+	 * @since 1.0.0
+	 * @return int Post ID or 0 if not found.
+	 */
+	public static function get_post_id_early() {
+
+		if ( is_singular() && get_queried_object_id() ) {
+			return get_queried_object_id();
+		}
+
+		// Try ?p=ID for plain permalinks
+		if ( isset($_GET['p']) && is_numeric($_GET['p']) ) {
+			return (int) $_GET['p'];
+		}
+
+		if ( isset( $_POST['post_ID'] ) ) {
+			return (int) $_POST['post_ID'];
+		}
+		
+		// Pretty permalinks: Try to extract the slug from the URL and find the post
+		$request_uri = $_SERVER['REQUEST_URI'];
+		$path = trim(parse_url($request_uri, PHP_URL_PATH), '/');
+		if ( $path ) {
+			// Assumes /post-slug or /category/post-slug format, not 100% bulletproof!
+			$parts = explode('/', $path);
+			$slug = end($parts);
+			$post = get_page_by_path($slug, OBJECT, get_post_types(['public' => true]));
+			if ( $post ) {
+				return $post->ID;
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Get taxonomy early from query vars or request path.
+	 *
+	 * This is a helper function to get the taxonomy before the main query runs.
+	 * It checks query vars first, then tries to extract from the request path.
+	 *
+	 * @since 1.0.0
+	 * @return string|bool Taxonomy slug or false if not found.
+	 */
+	public static function get_taxonomy_early() {
+		// Check query vars first
+		if ( isset( $_GET['taxonomy'] ) && taxonomy_exists( $_GET['taxonomy'] ) ) {
+			return sanitize_key( $_GET['taxonomy'] );
+		}
+
+		// Try to extract from request path
+		$request_uri = $_SERVER['REQUEST_URI'] ?? '';
+		$path = trim( parse_url( $request_uri, PHP_URL_PATH ), '/' );
+
+		if ( $path ) {
+			$parts = explode( '/', $path );
+
+			foreach ( $parts as $part ) {
+				foreach ( get_taxonomies( [], 'names' ) as $taxonomy ) {
+					$term = get_term_by( 'slug', $part, $taxonomy );
+					if ( $term ) {
+						return $taxonomy;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public function add_preview_theme_param_to_preview_link( $preview_link, $post ) {
@@ -166,82 +329,6 @@ class ThemeSwitcher {
 			is_user_logged_in() && current_user_can( 'edit_posts' )
 		);
 	}
-
-	/**
-	 * 
-	 * Filter the theme template if Preview Mode (admin only).
-	 * 
-	 * Filter the theme template for Theme Set Mode (all users).
-	 * 
-	 * @param mixed $template
-	 */
-	public function resolve_template( $template ) {
-		$theme_slug = $this->get_preview_theme();
-		
-		// If not in preview mode, fall back to assigned theme
-		if ( ! $theme_slug ) {
-			$theme_slug = $this->get_assigned_theme();
-		}
-
-		if ( $theme_slug ) {
-			$theme = \wp_get_theme( $theme_slug );
-			// echo "<pre>";
-			// print_r($theme);
-			//exit("vcccvc");
-			if ( $theme->exists() ) {
-				//echo "inside";
-				$template_slug = $theme->get_template(); // Parent theme
-				//echo "<br/>";
-				$stylesheet_slug = $theme->get_stylesheet(); // Actual (could be child)
-				//echo "<br/>";
-				// For FSE child themes like 'ollie-child', return its own template
-				//echo "template_slug = ".$template_slug;
-				//echo "stylesheet_slug = ".$stylesheet_slug;
-				if ( $template_slug === $stylesheet_slug ) {
-					return $template_slug;
-				}
-				//exit("xvcxvc");
-
-				// If it's a block (FSE) child theme but has its own theme.json or index.html, allow it
-				$child_theme_dir = get_theme_root() . '/' . $stylesheet_slug;
-				//ßecho "<br/>";
-				if (
-					file_exists( $child_theme_dir . '/theme.json' )
-					//file_exists( $child_theme_dir . '/templates/index.html' )
-				) {
-					//echo "file_exists = ".$stylesheet_slug;
-					//echo "<br/>";
-					//return "ollie-child";
-					return $stylesheet_slug;
-				}
-
-				// Fallback to parent if child missing required FSE files
-				//return "ollie-child";
-				return $template_slug;
-			}
-		}
-
-		return $template;
-	}
-
-	public function resolve_stylesheet( $stylesheet ) {
-		$theme_slug = $this->get_preview_theme();
-
-		// If not in preview mode, fall back to assigned theme
-		if ( ! $theme_slug ) {
-			$theme_slug = $this->get_assigned_theme();
-		}
-
-		if ( $theme_slug ) {
-			$theme = wp_get_theme( $theme_slug );
-			if ( $theme->exists() ) {
-				//echo "styleshhet_slug = ". $theme->get_stylesheet();
-				return $theme->get_stylesheet();
-			}
-		}
-		//return "ollie-child";
-		return $stylesheet;
-	}
 	
 	/**
 	 * Add body class for Preview Mode (admin only).
@@ -277,13 +364,20 @@ class ThemeSwitcher {
 	 * @return void
 	 */
 	public function enqueue_scripts() {
+
 		// Check if preview mode is enabled in settings
 		if ( ! $this->theme_resolver->is_preview_mode_enabled() ) {
 			return;
 		}
-		
+
 		// Only enqueue for users who can preview themes
 		if ( ! $this->can_user_preview() ) {
+			return;
+		}
+		
+		// Check if user is currently in preview mode
+		$preview_theme = $this->get_preview_theme();
+		if ( ! $preview_theme ) {
 			return;
 		}
 
@@ -295,12 +389,29 @@ class ThemeSwitcher {
 			WTS_PLUGIN_VERSION
 		);
 
+		// Enqueue preview banner-specific CSS
+		wp_enqueue_style(
+			'sts-preview-banner',
+			STS_PLUGIN_URL . 'assets/dist/preview-banner.css',
+			array(),
+			STS_PLUGIN_VERSION
+		);
+
 		// Enqueue preview JS
 		wp_enqueue_script(
 			'sts-preview',
 			WTS_PLUGIN_URL . 'assets/dist/preview.js',
 			array( 'jquery' ),
 			WTS_PLUGIN_VERSION,
+			true
+		);
+
+		// Enqueue preview-banner specific JS
+		wp_enqueue_script(
+			'sts-preview-banner',
+			STS_PLUGIN_URL . 'assets/dist/preview-banner.js',
+			array( 'jquery' ),
+			STS_PLUGIN_VERSION,
 			true
 		);
 
@@ -316,6 +427,20 @@ class ThemeSwitcher {
 				'isPreviewMode' => (bool) $this->get_preview_theme(),
 			)
 		);
+
+		// Localize preview-banner script (if that’s where UI is handled)
+		wp_localize_script(
+			'sts-preview-banner',
+			'PreviewBanner',
+			array(
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'nonce'         => wp_create_nonce( 'sts-preview-banner-nonce' ),
+				'currentUrl'    => esc_url( remove_query_arg( $this->get_query_param_name() ) ),
+				'queryParam'    => $this->get_query_param_name(),
+				'currentTheme'  => $preview_theme,
+			)
+		);
+		
 	}
 
 	/**

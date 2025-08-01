@@ -69,7 +69,6 @@ final class Plugin {
 
 		// Initialize frontend components.
 		new Frontend\Frontend();
-		new Frontend\PreviewBanner();
 	}
 
 	/**

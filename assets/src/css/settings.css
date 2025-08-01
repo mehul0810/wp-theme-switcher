@@ -87,9 +87,13 @@
 
 /* Content area */
 .sts-settings-content {
-    padding: 0 24px 24px;
+    padding: 0 24px 45px;
     max-width: 960px;
     margin: 0 auto;
+}
+
+.sts-settings-content .notice { 
+    margin: 0px 0px 24px 0px;
 }
 
 /* Loading state */

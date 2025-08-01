@@ -137,9 +137,8 @@ class SettingsPage {
 					'advancedTab'         => __( 'Advanced', 'wts-theme-switcher' ),
 					
 					// Post Types & Taxonomies.
-					'enableForPostType'   => __( 'Enable theme preview for this post type', 'wts-theme-switcher' ),
-					'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'wts-theme-switcher' ),
-					'selectTheme'         => __( 'Select theme', 'wts-theme-switcher' ),
+					//'enableForTaxonomy'   => __( 'Enable theme preview for this taxonomy', 'smart-theme-switcher' ),
+					'selectTheme'         => __( 'Select theme', 'smart-theme-switcher' ),
 					
 					// Advanced settings.
 					'enableThemePreview'  => __( 'Enable Theme Preview', 'wts-theme-switcher' ),
