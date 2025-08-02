@@ -1,7 +1,7 @@
 /**
  * Theme Switcher Block Editor Component
  * 
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  */
 
 import '../css/editor.css';

@@ -2,13 +2,13 @@
 /**
  * Admin Class
  *
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  * @since 1.0.0
  */
 
-namespace WpThemeSwitcher\Admin;
+namespace WPThemeSwitcher\Admin;
 
-use WpThemeSwitcher\ThemeSwitcher;
+use WPThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

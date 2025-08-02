@@ -3,7 +3,7 @@ import '../css/preview-banner.css';
 /**
  * Preview Banner Functionality
  * 
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  */
 
 (function($) {

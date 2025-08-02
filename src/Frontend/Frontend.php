@@ -2,13 +2,13 @@
 /**
  * Frontend Class
  *
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  * @since 1.0.0
  */
 
-namespace WpThemeSwitcher\Frontend;
+namespace WPThemeSwitcher\Frontend;
 
-use WpThemeSwitcher\ThemeSwitcher;
+use WPThemeSwitcher\ThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

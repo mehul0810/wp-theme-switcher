@@ -2,11 +2,11 @@
 /**
  * Theme Resolver Class
  *
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  * @since 1.0.0
  */
 
-namespace WpThemeSwitcher;
+namespace WPThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -103,7 +103,7 @@ class ThemeResolver {
 		$meta_theme = get_post_meta( $post_id, 'wpts_theme_switcher_active_theme', true );
 		if ( ! empty( $meta_theme ) ) {
 			// Verify theme exists before using it
-			$theme_switcher = new \WpThemeSwitcher\ThemeSwitcher();
+			$theme_switcher = new \WPThemeSwitcher\ThemeSwitcher();
 			if ( $theme_switcher->is_valid_theme( $meta_theme ) ) {
 				// Cache the result
 				wp_cache_set( $cache_key, $meta_theme, 'wpts_theme_switcher' );
@@ -178,7 +178,7 @@ class ThemeResolver {
 			$theme_slug = sanitize_text_field( $this->settings['post_types'][ $post_type ]['theme'] );
 			
 			// Verify theme exists before using it
-			$theme_switcher = new \WpThemeSwitcher\ThemeSwitcher();
+			$theme_switcher = new \WPThemeSwitcher\ThemeSwitcher();
 			if ( $theme_switcher->is_valid_theme( $theme_slug ) ) {
 				wp_cache_set( $cache_key, $theme_slug, 'wpts_theme_switcher' );
 				return $theme_slug;
@@ -216,7 +216,7 @@ class ThemeResolver {
 			$meta_theme = get_term_meta( $queried_object->term_id, 'wpts_theme_switcher_active_theme', true );
 			if ( ! empty( $meta_theme ) ) {
 				// Verify theme exists before using it
-				$theme_switcher = new \WpThemeSwitcher\ThemeSwitcher();
+				$theme_switcher = new \WPThemeSwitcher\ThemeSwitcher();
 				if ( $theme_switcher->is_valid_theme( $meta_theme ) ) {
 					// Cache the result
 					wp_cache_set( $cache_key, $meta_theme, 'wpts_theme_switcher' );
@@ -243,7 +243,7 @@ class ThemeResolver {
 		) {
 			// Verify theme exists before using it
 			$theme_slug = sanitize_text_field( $this->settings['taxonomies'][ $taxonomy ]['theme'] );
-			$theme_switcher = new \WpThemeSwitcher\ThemeSwitcher();
+			$theme_switcher = new \WPThemeSwitcher\ThemeSwitcher();
 			if ( $theme_switcher->is_valid_theme( $theme_slug ) ) {
 				return $theme_slug;
 			}

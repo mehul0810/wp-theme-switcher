@@ -2,11 +2,11 @@
 /**
  * Main Plugin Class
  *
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  * @since 1.0.0
  */
 
-namespace WpThemeSwitcher;
+namespace WPThemeSwitcher;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

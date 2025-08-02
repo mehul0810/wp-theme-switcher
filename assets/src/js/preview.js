@@ -3,7 +3,7 @@ import '../css/preview.css';
 /**
  * Frontend Preview Functionality
  * 
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  */
 
 (function($) {

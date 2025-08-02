@@ -2,11 +2,11 @@
 /**
  * Settings Page Class
  *
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  * @since 1.0.0
  */
 
-namespace WpThemeSwitcher\Admin;
+namespace WPThemeSwitcher\Admin;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

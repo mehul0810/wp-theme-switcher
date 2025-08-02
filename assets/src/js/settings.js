@@ -1,7 +1,7 @@
 /**
  * Settings Page React Component
  * 
- * @package WpThemeSwitcher
+ * @package WPThemeSwitcher
  */
 
 import '../css/settings.css';
