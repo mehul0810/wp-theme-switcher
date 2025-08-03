@@ -48,15 +48,14 @@
     gap: 16px;
 }
 
+.wpts-plugin-logo {
+    width: 200px;
+}
+
 .wpts-plugin-name {
     font-size: 16px;
     font-weight: 600;
     margin-right: 24px;
-}
-
-.wpts-page-title {
-    font-size: 14px;
-    color: #757575;
 }
 
 .wpts-version-badge {

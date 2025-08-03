@@ -131,7 +131,8 @@ class SettingsPage {
 					'pluginName'          => __( 'WP Theme Switcher', 'wpts-theme-switcher' ),
 					'settingsTitle'       => __( 'Settings', 'wpts-theme-switcher' ),
 					'viewDocs'            => __( 'View Documentation', 'wpts-theme-switcher' ),
-					
+					'pluginLogo'          => esc_url( WPTS_PLUGIN_URL . 'assets/dist/images/logo.png' ),
+
 					// Tabs.
 					'generalTab'          => __( 'General', 'wpts-theme-switcher' ),
 					'advancedTab'         => __( 'Advanced', 'wpts-theme-switcher' ),

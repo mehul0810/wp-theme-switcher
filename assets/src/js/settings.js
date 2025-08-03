@@ -38,8 +38,9 @@ import '../css/settings.css';
         return (
             <div className="wpts-settings-header">
                 <div className="wpts-settings-header-left">
-                    <div className="wpts-plugin-name">{wptsSettings.strings.pluginName}</div>
-                    <div className="wpts-page-title">{wptsSettings.strings.settingsTitle}</div>
+                    <div className="wpts-plugin-name">
+                        <img className="wpts-plugin-logo" src={wptsSettings.strings.pluginLogo} alt={wptsSettings.strings.pluginName} />
+                    </div>
                 </div>
                 <div className="wpts-settings-header-right">
                     <ExternalLink href={wptsSettings.docUrl} className="wpts-doc-link">
