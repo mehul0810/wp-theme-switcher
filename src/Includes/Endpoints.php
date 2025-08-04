@@ -1,12 +1,12 @@
 <?php
 /**
- * Settings Class
- *
- * @package WPThemeSwitcher
+ * Endpoints
+ * 
  * @since 1.0.0
+ * @package WPThemeSwitcher
  */
 
-namespace WPThemeSwitcher;
+namespace WPThemeSwitcher\Includes;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,56 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Settings Class.
- *
- * Handles the plugin settings.
+ * Class Endpoints
  *
  * @since 1.0.0
+ * @package WPThemeSwitcher
  */
-class Settings {
-
-	/**
-	 * Constructor.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __construct() {
-		// Initialize hooks.
-		$this->init_hooks();
-	}
-
-	/**
-	 * Initialize hooks.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function init_hooks() {
-		// Register settings.
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		
-		// Register REST API routes.
-		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-	}
-
-	/**
-	 * Register settings.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function register_settings() {
-		// Register the new option
-		register_setting(
-			'wpts_theme_switcher_settings',
-			'wpts_theme_switcher_settings',
-			array(
-				'sanitize_callback' => array( $this, 'sanitize_settings' ),
-				'show_in_rest'      => true,
-			)
-		);
-	}
-
+class Endpoints {
+	
 	/**
 	 * Register REST API routes.
 	 *
@@ -240,7 +197,7 @@ class Settings {
 	 * @return \WP_REST_Response
 	 */
 	public function rest_get_themes( $request ) {
-		$themes_instance = new ThemeSwitcher();
+		$themes_instance = new \WPThemeSwitcher\ThemeSwitcher();
 		$themes = $themes_instance->get_available_themes();
 
 		// Get the active theme slug (stylesheet).
@@ -280,8 +237,8 @@ class Settings {
 		}
 		
 		// Sanitize the settings
-		$sanitized_settings = $this->sanitize_settings( $settings );
-		
+		$sanitized_settings = Helpers::sanitize_settings( $settings );
+
 		// Update the settings
 		update_option( 'wpts_theme_switcher_settings', $sanitized_settings );
 		
@@ -290,73 +247,6 @@ class Settings {
 		$theme_switcher->clear_theme_caches();
 		
 		return rest_ensure_response( array( 'success' => true, 'settings' => $sanitized_settings ) );
-	}
-
-	/**
-	 * Sanitize settings.
-	 *
-	 * @since 1.0.0
-	 * @param array $input Settings input.
-	 * @return array Sanitized settings.
-	 */
-	public function sanitize_settings( $input ) {
-		$sanitized_input = array();
-
-		// Post types.
-		if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
-			$sanitized_input['post_types'] = array();
-			
-			foreach ( $input['post_types'] as $post_type => $settings ) {
-				// Skip if post type is not valid
-				if ( ! post_type_exists( sanitize_key( $post_type ) ) && 'post' !== $post_type && 'page' !== $post_type ) {
-					continue;
-				}
-				
-				$sanitized_input['post_types'][ sanitize_key( $post_type ) ] = array(
-					//'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
-					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
-				);
-			}
-		}
-
-		// Taxonomies.
-		if ( isset( $input['taxonomies'] ) && is_array( $input['taxonomies'] ) ) {
-			$sanitized_input['taxonomies'] = array();
-			
-			foreach ( $input['taxonomies'] as $taxonomy => $settings ) {
-				// Skip if taxonomy is not valid
-				if ( ! taxonomy_exists( sanitize_key( $taxonomy ) ) && 'category' !== $taxonomy && 'post_tag' !== $taxonomy ) {
-					continue;
-				}
-				
-				$sanitized_input['taxonomies'][ sanitize_key( $taxonomy ) ] = array(
-					//'enabled' => isset( $settings['enabled'] ) ? (bool) $settings['enabled'] : false,
-					'theme'   => isset( $settings['theme'] ) ? sanitize_text_field( $settings['theme'] ) : 'use_active',
-				);
-			}
-		}
-
-		// Advanced settings.
-		if ( isset( $input['advanced'] ) && is_array( $input['advanced'] ) ) {
-			$sanitized_input['advanced'] = array();
-			foreach ( $input['advanced'] as $key => $value ) {
-				$sanitized_input['advanced'][ sanitize_key( $key ) ] = sanitize_text_field( $value );
-			}
-			
-			// Set enable_preview based on the advanced setting
-			$sanitized_input['enable_preview'] = isset( $input['advanced']['preview_enabled'] ) && 
-												$input['advanced']['preview_enabled'] ? 'yes' : 'no';
-		} else {
-			$sanitized_input['advanced'] = array(
-				'preview_enabled' => true,
-				'debug_enabled'   => false,
-			);
-			
-			// Default enable_preview to 'yes' if advanced settings are missing
-			$sanitized_input['enable_preview'] = 'yes';
-		}
-
-		return $sanitized_input;
 	}
 
 	/**
@@ -370,6 +260,4 @@ class Settings {
 		$settings = get_option( 'wpts_theme_switcher_settings', array() );
 		return is_array( $settings ) ? $settings : array();
 	}
-
-
 }

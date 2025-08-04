@@ -382,38 +382,38 @@ class ThemeSwitcher {
 		}
 
 		// Enqueue preview CSS
-		wp_enqueue_style(
-			'wpts-preview',
-			WPTS_PLUGIN_URL . 'assets/dist/preview.css',
-			array(),
-			WPTS_PLUGIN_VERSION
-		);
+		// wp_enqueue_style(
+		// 	'wpts-preview',
+		// 	WPTS_PLUGIN_URL . 'assets/dist/preview.css',
+		// 	array(),
+		// 	WPTS_PLUGIN_VERSION
+		// );
 
 		// Enqueue preview banner-specific CSS
-		wp_enqueue_style(
-			'wpts-preview-banner',
-			WPTS_PLUGIN_URL . 'assets/dist/preview-banner.css',
-			array(),
-			WPTS_PLUGIN_VERSION
-		);
+		// wp_enqueue_style(
+		// 	'wpts-preview-banner',
+		// 	WPTS_PLUGIN_URL . 'assets/dist/preview-banner.css',
+		// 	array(),
+		// 	WPTS_PLUGIN_VERSION
+		// );
 
 		// Enqueue preview JS
-		wp_enqueue_script(
-			'wpts-preview',
-			WPTS_PLUGIN_URL . 'assets/dist/preview.js',
-			array( 'jquery' ),
-			WPTS_PLUGIN_VERSION,
-			true
-		);
+		// wp_enqueue_script(
+		// 	'wpts-preview',
+		// 	WPTS_PLUGIN_URL . 'assets/dist/preview.js',
+		// 	array( 'jquery' ),
+		// 	WPTS_PLUGIN_VERSION,
+		// 	true
+		// );
 
 		// Enqueue preview-banner specific JS
-		wp_enqueue_script(
-			'wpts-preview-banner',
-			WPTS_PLUGIN_URL . 'assets/dist/preview-banner.js',
-			array( 'jquery' ),
-			WPTS_PLUGIN_VERSION,
-			true
-		);
+		// wp_enqueue_script(
+		// 	'wpts-preview-banner',
+		// 	WPTS_PLUGIN_URL . 'assets/dist/preview-banner.js',
+		// 	array( 'jquery' ),
+		// 	WPTS_PLUGIN_VERSION,
+		// 	true
+		// );
 
 		// Localize script
 		wp_localize_script(

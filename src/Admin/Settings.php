@@ -1,9 +1,9 @@
 <?php
 /**
- * Settings Page Class
+ * Settings
  *
- * @package WPThemeSwitcher
  * @since 1.0.0
+ * @package WPThemeSwitcher
  */
 
 namespace WPThemeSwitcher\Admin;
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class SettingsPage {
+class Settings {
 
 	/**
 	 * Constructor.
@@ -28,22 +28,14 @@ class SettingsPage {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		// Initialize hooks.
-		$this->init_hooks();
-	}
-
-	/**
-	 * Initialize hooks.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function init_hooks() {
 		// Add settings page.
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 
 		// Enqueue admin scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+
+		// Register settings.
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
 	/**
@@ -125,7 +117,7 @@ class SettingsPage {
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'version'     => WPTS_PLUGIN_VERSION,
 				'adminUrl'    => admin_url(),
-				'docUrl'      => 'https://github.com/mehul0810/wp-theme-switcher',
+				'docUrl'      => 'https://wpthemeswitcher.com/docs/',
 				'strings'     => array(
 					// Header.
 					'pluginName'          => __( 'WP Theme Switcher', 'wpts-theme-switcher' ),
@@ -159,4 +151,24 @@ class SettingsPage {
 			)
 		);
 	}
+
+	/**
+	 * Register settings.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function register_settings() {
+		// Register the new option
+		register_setting(
+			'wpts_theme_switcher_settings',
+			'wpts_theme_switcher_settings',
+			array(
+				'sanitize_callback' => '\WPThemeSwitcher\Helpers::sanitize_settings',
+				'show_in_rest'      => true,
+			)
+		);
+	}
+
+	
 }

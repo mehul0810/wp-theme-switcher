@@ -20,6 +20,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Plugin {
 
+	/**
+	 * Register the plugin.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
 	public function register() {
 		// Setup plugin constants.
 		$this->setup();
@@ -27,9 +33,9 @@ final class Plugin {
 		// Register services used throughout the plugin.
 		add_action( 'plugins_loaded', array( $this, 'register_services' ) );
 
+		// Register rest API routes.
 		add_action( 'rest_api_init', function() {
-			// Register REST API routes.
-			(new Settings())->register_rest_routes();
+			(new \WPThemeSwitcher\Includes\Endpoints())->register_rest_routes();
 		} );
 
 		// Load text domain.
@@ -57,18 +63,20 @@ final class Plugin {
 	 * @return void
 	 */
 	public function register_services() {
-		// Initialize core components.
+		// Initialize Core Theme Switcher module.
 		new ThemeSwitcher();
-		// new Settings();
-		new Admin\Admin();
-		// Initialize admin components if in admin area.
-		if ( is_admin() ) {
-			
-			new Admin\SettingsPage();
+
+		
+
+		// Load Admin Pages only.
+		if ( is_admin() ) {	
+			new Admin\Filters();
+			new Admin\Settings();	
 		}
 
-		// Initialize frontend components.
-		// new Frontend\Frontend();
+		// Load Frontend Actions (includes theme preview functionality).
+		new Includes\Actions();
+		new Includes\Endpoints();
 	}
 
 	/**

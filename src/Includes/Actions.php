@@ -1,83 +1,41 @@
 <?php
 /**
- * Admin Class
- *
- * @package WPThemeSwitcher
+ * Frontend Actions.
+ * 
  * @since 1.0.0
+ * @package WPThemeSwitcher
  */
 
-namespace WPThemeSwitcher\Admin;
-
-use WPThemeSwitcher\ThemeSwitcher;
+namespace WPThemeSwitcher\Includes;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Admin Class.
- *
- * Handles admin-related functionality.
- *
- * @since 1.0.0
- */
-class Admin {
-
+class Actions {
 	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		// Initialize hooks.
-		$this->init_hooks();
-	}
-
-	/**
-	 * Initialize hooks.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function init_hooks() {
-		// Add settings link to plugins page.
-		add_filter( 'plugin_action_links_' . plugin_basename( WPTS_PLUGIN_FILE ), array( $this, 'add_settings_link' ) );
-
 		// Add admin bar menu for preview banner (frontend only)
 		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_menu' ), 999 );
 	}
 
 	/**
-	 * Add settings link to plugins page.
-	 *
-	 * @since 1.0.0
-	 * @param array $links Array of plugin action links.
-	 * @return array Modified array of plugin action links.
-	 */
-	public function add_settings_link( $links ) {
-		// Add settings link.
-		$settings_link = sprintf(
-			'<a href="%s">%s</a>',
-			admin_url( 'options-general.php?page=wpts-theme-switcher' ),
-			__( 'Settings', 'wpts-theme-switcher' )
-		);
-
-		array_unshift( $links, $settings_link );
-
-		return $links;
-	}
-
-	/**
 	 * Add admin bar menu.
 	 *
-	 * @since 1.0.0
 	 * @param \WP_Admin_Bar $wp_admin_bar Admin bar object.
+	 * 
+	 * @since 1.0.0
+	 *
 	 * @return void
 	 */
 	public function add_admin_bar_menu( $wp_admin_bar ) {
 		// Only show for users who can preview.
-		$theme_switcher = new ThemeSwitcher();
+		$theme_switcher = new \WPThemeSwitcher\ThemeSwitcher();
 		if ( ! $theme_switcher->can_user_preview() ) {
 			return;
 		}
