@@ -100,22 +100,9 @@ body.wp-admin:not(iframe#content-iframe) body.wpts-preview-mode::after {
     color: #32373c;
 }
 
-.wpts-exit-preview-button {
-    background-color: #d54e21 !important;
-    color: #fff !important;
-    border-color: #d54e21 !important;
-    height: 30px;
-    line-height: 28px;
-    padding: 0 12px;
-    font-size: 13px;
-    box-shadow: none !important;
-}
-
 .wpts-exit-preview-button:hover,
 .wpts-exit-preview-button:focus {
-    background-color: #be3c13 !important;
     color: #fff !important;
-    border-color: #be3c13 !important;
 }
 
 /* Adjust for admin bar */
