@@ -243,13 +243,18 @@ class Settings {
 		$themes_instance = new ThemeSwitcher();
 		$themes = $themes_instance->get_available_themes();
 
-		// Format themes for dropdown.
+		// Get the active theme slug (stylesheet).
+		$active_theme_slug = get_stylesheet();
+
+		// Format themes for dropdown, excluding the active theme.
 		$formatted_themes = array(
 			'use_active' => __( 'Use Active Theme', 'wpts-theme-switcher' ),
 		);
 
-		// Add all other themes.
 		foreach ( $themes as $slug => $name ) {
+			if ( $slug === $active_theme_slug ) {
+				continue;
+			}
 			$formatted_themes[ $slug ] = $name;
 		}
 
@@ -340,7 +345,7 @@ class Settings {
 			
 			// Set enable_preview based on the advanced setting
 			$sanitized_input['enable_preview'] = isset( $input['advanced']['preview_enabled'] ) && 
-			                                    $input['advanced']['preview_enabled'] ? 'yes' : 'no';
+												$input['advanced']['preview_enabled'] ? 'yes' : 'no';
 		} else {
 			$sanitized_input['advanced'] = array(
 				'preview_enabled' => true,

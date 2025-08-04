@@ -82,13 +82,12 @@ class Frontend {
 		<div id="wpts-preview-banner" class="wpts-preview-banner frontend">
 			<div class="wpts-preview-banner-inner">
 				<div class="wpts-preview-info">
-					<span class="wpts-preview-label"><?php esc_html_e( 'Preview Mode:', 'wpts-theme-switcher' ); ?></span>
-					<span class="wpts-preview-theme"><?php echo esc_html( $preview_theme->get( 'Name' ) ); ?></span>
+					<img class="wpts-preview-logo" src="<?php echo esc_url( WPTS_PLUGIN_URL . 'assets/dist/images/logo.png' ); ?>" alt="<?php esc_attr_e( 'WP Theme Switcher Logo', 'wpts-theme-switcher' ); ?>" class="wpts-preview-icon" />
 				</div>
 				
 				<div class="wpts-preview-actions">
+					<span class="wpts-preview-label"><?php esc_html_e( 'Preview Theme:', 'wpts-theme-switcher' ); ?></span>
 					<div class="wpts-theme-select-wrapper">
-						<label for="wpts-theme-select" class="screen-reader-text"><?php esc_html_e( 'Select Theme', 'wpts-theme-switcher' ); ?></label>
 						<select id="wpts-theme-select" class="wpts-theme-select">
 							<option value=""><?php esc_html_e( 'Switch Theme...', 'wpts-theme-switcher' ); ?></option>
 							<?php foreach ( $themes as $slug => $name ) : ?>
@@ -99,7 +98,7 @@ class Frontend {
 						</select>
 					</div>
 					
-					<a href="<?php echo esc_url( $current_url ); ?>" class="wpts-exit-preview-button button button-secondary">
+					<a href="<?php echo esc_url( $current_url ); ?>" class="wpts-exit-preview-button">
 						<?php esc_html_e( 'Exit Preview', 'wpts-theme-switcher' ); ?>
 					</a>
 				</div>
