@@ -68,6 +68,7 @@ final class Plugin {
 
 		// Load Admin Pages only.
 		if ( is_admin() ) {	
+			new Admin\Actions();
 			new Admin\Filters();
 			new Admin\Settings();	
 		}

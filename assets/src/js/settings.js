@@ -134,7 +134,7 @@ import '../css/settings.css';
                         <Flex direction="column">
                             <h3 className="wpts-card-title">{__('Post Types', 'wpts-theme-switcher')}</h3>
                             <p className="wpts-card-description">
-                                {__('Select themes for different post types. Use "Use Active Theme" to apply the currently active theme.', 'wpts-theme-switcher')}
+                                {__('Choose which theme to use for each post type. Select "Use Active Theme" to keep the main site theme.', 'wpts-theme-switcher')}
                             </p>
                         </Flex>
                     </CardHeader>
@@ -157,7 +157,7 @@ import '../css/settings.css';
                                 {__('Taxonomies', 'wpts-theme-switcher')}
                             </h3>
                             <p className="wpts-card-description">
-                                {__('Select themes for different post types. Use "Use Active Theme" to apply the currently active theme.', 'wpts-theme-switcher')}
+                                {__('Choose which theme to use for each taxonomy. Select "Use Active Theme" to keep the main site theme.', 'wpts-theme-switcher')}
                             </p>
                         </Flex>
                     </CardHeader>
@@ -193,16 +193,6 @@ import '../css/settings.css';
                                 onSettingChange('advanced', {
                                     ...advancedSettings,
                                     preview_enabled
-                                });
-                            }}
-                        />
-                        <ToggleControl
-                            label={wptsSettings.strings.enableDebugging}
-                            checked={advancedSettings.debug_enabled}
-                            onChange={(debug_enabled) => {
-                                onSettingChange('advanced', {
-                                    ...advancedSettings,
-                                    debug_enabled
                                 });
                             }}
                         />
