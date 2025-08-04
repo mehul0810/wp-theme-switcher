@@ -40,7 +40,7 @@ class Actions {
 
 		add_meta_box(
 			'wpts_theme_switcher_metabox',
-			__( 'WP Theme Switcher Settings', 'wpts-theme-switcher' ),
+			__( 'WP Theme Switcher', 'wpts-theme-switcher' ),
 			array( $this, 'render_theme_metabox' ),
 			$post_type,
 			'side',
