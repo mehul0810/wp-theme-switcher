@@ -22,6 +22,90 @@ class Actions {
 	public function __construct() {
 		// Add admin bar menu for preview banner (frontend only)
 		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_menu' ), 999 );
+
+		// Add metabox for classic editor only
+		add_action( 'add_meta_boxes', array( $this, 'add_theme_metabox' ) );
+		add_action( 'save_post', array( $this, 'save_theme_metabox' ) );
+	}
+	/**
+	 * Add Theme Switcher metabox for classic editor only.
+	 *
+	 * @since 1.0.0
+	 */
+	public function add_theme_metabox( $post_type ) {
+		// Only show for classic editor (not Gutenberg)
+		if ( function_exists( 'use_block_editor_for_post_type' ) && use_block_editor_for_post_type( $post_type ) ) {
+			return;
+		}
+
+		add_meta_box(
+			'wpts_theme_switcher_metabox',
+			__( 'WP Theme Switcher Settings', 'wpts-theme-switcher' ),
+			array( $this, 'render_theme_metabox' ),
+			$post_type,
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render the Theme Switcher metabox.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_theme_metabox( $post ) {
+		$theme_switcher = new \WPThemeSwitcher\ThemeSwitcher();
+		$themes = $theme_switcher->get_available_themes();
+		$selected = get_post_meta( $post->ID, 'wpts_theme_switcher_active_theme', true );
+
+		wp_nonce_field( 'wpts_theme_metabox', 'wpts_theme_metabox_nonce' );
+		echo '<label for="wpts_selected_theme"><strong>' . esc_html__( 'Select Theme', 'wpts-theme-switcher' ) . '</strong></label><br />';
+		echo '<select name="wpts_selected_theme" id="wpts_selected_theme" style="width:100%;">';
+		echo '<option value="">' . esc_html__( 'Use Active Theme', 'wpts-theme-switcher' ) . '</option>';
+		foreach ( $themes as $theme_slug => $theme_name ) {
+			printf(
+				'<option value="%s" %s>%s</option>',
+				esc_attr( $theme_slug ),
+				selected( $selected, $theme_slug, false ),
+				esc_html( $theme_name )
+			);
+		}
+		echo '</select>';
+	}
+
+	/**
+	 * Save the selected theme from the metabox.
+	 *
+	 * @since 1.0.0
+	 */
+	public function save_theme_metabox( $post_id ) {
+		// Verify nonce
+		if ( ! isset( $_POST['wpts_theme_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['wpts_theme_metabox_nonce'], 'wpts_theme_metabox' ) ) {
+			return;
+		}
+		// Autosave?
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+		// Check permissions
+		if ( isset( $_POST['post_type'] ) && 'page' === $_POST['post_type'] ) {
+			if ( ! current_user_can( 'edit_page', $post_id ) ) {
+				return;
+			}
+		} else {
+			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+				return;
+			}
+		}
+
+		if ( isset( $_POST['wpts_selected_theme'] ) ) {
+			$theme = sanitize_text_field( $_POST['wpts_selected_theme'] );
+			if ( $theme ) {
+				update_post_meta( $post_id, 'wpts_theme_switcher_active_theme', $theme );
+			} else {
+				delete_post_meta( $post_id, 'wpts_theme_switcher_active_theme' );
+			}
+		}
 	}
 
 	/**

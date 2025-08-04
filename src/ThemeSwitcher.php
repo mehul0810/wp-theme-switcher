@@ -469,8 +469,12 @@ class ThemeSwitcher {
 	public function get_available_themes() {
 		$themes = wp_get_themes();
 		$theme_options = array();
+		$active_theme = get_stylesheet();
 
 		foreach ( $themes as $theme_slug => $theme ) {
+			if ( $theme_slug === $active_theme ) {
+				continue; // Skip the active theme
+			}
 			$theme_options[ $theme_slug ] = $theme->get( 'Name' );
 		}
 
