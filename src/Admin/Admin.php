@@ -44,45 +44,8 @@ class Admin {
 		// Add settings link to plugins page.
 		add_filter( 'plugin_action_links_' . plugin_basename( WPTS_PLUGIN_FILE ), array( $this, 'add_settings_link' ) );
 
-		// Add admin bar menu for preview banner (frontend only, admin users only)
-		add_action( 'admin_bar_menu', array( $this, 'add_preview_banner_admin_bar' ), 80 );
-		
-		// Existing preview mode admin bar menu (if any)
+		// Add admin bar menu for preview banner (frontend only)
 		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_menu' ), 999 );
-	}
-
-	/**
-	 * Add Preview Banner admin bar menu for administrators on frontend.
-	 */
-	public function add_preview_banner_admin_bar( $wp_admin_bar ) {
-		// Only on frontend, only for administrators
-		if ( is_admin() || ! current_user_can( 'administrator' ) ) {
-			return;
-		}
-
-		$themes_instance = new \WPThemeSwitcher\ThemeSwitcher();
-		$themes = $themes_instance->get_available_themes();
-		$active_theme_slug = get_stylesheet();
-
-		// Remove active theme from the list
-		unset( $themes[ $active_theme_slug ] );
-
-		// Add main menu node
-		$wp_admin_bar->add_node( array(
-			'id'    => 'wpts-preview-banner',
-			'title' => __( 'Preview Theme', 'wpts-theme-switcher' ),
-			'href'  => false,
-		) );
-
-		// Add theme items as children
-		foreach ( $themes as $slug => $name ) {
-			$wp_admin_bar->add_node( array(
-				'id'     => 'wpts-preview-banner-theme-' . sanitize_html_class( $slug ),
-				'parent' => 'wpts-preview-banner',
-				'title'  => esc_html( $name ),
-				'href'   => add_query_arg( 'wpts_theme', $slug ),
-			) );
-		}
 	}
 
 	/**
