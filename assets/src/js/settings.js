@@ -21,7 +21,6 @@ import '../css/settings.css';
         FlexBlock,
         Panel,
         PanelBody,
-        PanelRow,
         Placeholder,
         SelectControl,
         Spinner,
@@ -59,41 +58,30 @@ import '../css/settings.css';
         const postTypeSettings = settings.post_types[postType.name] || { enabled: false, theme: 'use_active' };
         
         return (
-            <Panel className="wpts-post-type-panel">
-                <PanelBody 
-                    title={postType.label}
-                    initialOpen={postTypeSettings.enabled}
-                >
-                    <div className="wpts-panel-header">
-                        <div className="wpts-panel-header-right">
-                            <div className="wpts-toggle-dropdown-group">
-                                <SelectControl
-                                    label={wptsSettings.strings.selectTheme}
-                                    value={postTypeSettings.theme}
-                                    options={[
-                                        { label: wptsSettings.strings.useActiveTheme, value: 'use_active' },
-                                        ...Object.entries(settings.themes || {})
-                                            .filter(([key]) => key !== 'use_active')
-                                            .map(([value, label]) => ({
-                                                label,
-                                                value
-                                            }))
-                                    ]}
-                                    onChange={(theme) => {
-                                        onSettingChange('post_types', {
-                                            ...settings.post_types,
-                                            [postType.name]: {
-                                                ...postTypeSettings,
-                                                theme
-                                            }
-                                        });
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </PanelBody>
-            </Panel>
+            <div className="wpts-toggle-dropdown-group">
+                <SelectControl
+                    label={postType.label}
+                    value={postTypeSettings.theme}
+                    options={[
+                        { label: wptsSettings.strings.useActiveTheme, value: 'use_active' },
+                        ...Object.entries(settings.themes || {})
+                            .filter(([key]) => key !== 'use_active')
+                            .map(([value, label]) => ({
+                                label,
+                                value
+                            }))
+                    ]}
+                    onChange={(theme) => {
+                        onSettingChange('post_types', {
+                            ...settings.post_types,
+                            [postType.name]: {
+                                ...postTypeSettings,
+                                theme
+                            }
+                        });
+                    }}
+                />
+            </div>
         );
     };
 
@@ -102,43 +90,32 @@ import '../css/settings.css';
      */
     const TaxonomyPanel = ({ taxonomy, settings, onSettingChange }) => {
         const taxonomySettings = settings.taxonomies[taxonomy.name] || { enabled: false, theme: 'use_active' };
-        
+
         return (
-            <Panel className="wpts-taxonomy-panel">
-                <PanelBody 
-                    title={taxonomy.label}
-                    initialOpen={taxonomySettings.enabled}
-                >
-                    <div className="wpts-panel-header">
-                        <div className="wpts-panel-header-right">
-                            <div className="wpts-toggle-dropdown-group">
-                                <SelectControl
-                                    label={wptsSettings.strings.selectTheme}
-                                    value={taxonomySettings.theme}
-                                    options={[
-                                        { label: wptsSettings.strings.useActiveTheme, value: 'use_active' },
-                                        ...Object.entries(settings.themes || {})
-                                            .filter(([key]) => key !== 'use_active')
-                                            .map(([value, label]) => ({
-                                                label,
-                                                value
-                                            }))
-                                    ]}
-                                    onChange={(theme) => {
-                                        onSettingChange('taxonomies', {
-                                            ...settings.taxonomies,
-                                            [taxonomy.name]: {
-                                                ...taxonomySettings,
-                                                theme
-                                            }
-                                        });
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </PanelBody>
-            </Panel>
+            <div className="wpts-toggle-dropdown-group">
+                <SelectControl
+                    label={taxonomy.label}
+                    value={taxonomySettings.theme}
+                    options={[
+                        { label: wptsSettings.strings.useActiveTheme, value: 'use_active' },
+                        ...Object.entries(settings.themes || {})
+                            .filter(([key]) => key !== 'use_active')
+                            .map(([value, label]) => ({
+                                label,
+                                value
+                            }))
+                    ]}
+                    onChange={(theme) => {
+                        onSettingChange('taxonomies', {
+                            ...settings.taxonomies,
+                            [taxonomy.name]: {
+                                ...taxonomySettings,
+                                theme
+                            }
+                        });
+                    }}
+                />
+            </div>
         );
     };
 
@@ -152,25 +129,49 @@ import '../css/settings.css';
 
         return (
             <div className="wpts-general-tab">
-                <h3>{__('Post Types', 'wpts-theme-switcher')}</h3>
-                {Object.values(postTypes).map((postType) => (
-                    <PostTypePanel 
-                        key={postType.name}
-                        postType={postType}
-                        settings={{ ...settings, post_types: safePostTypes }}
-                        onSettingChange={onSettingChange}
-                    />
-                ))}
-                
-                <h3>{__('Taxonomies', 'wpts-theme-switcher')}</h3>
-                {Object.values(taxonomies).map((taxonomy) => (
-                    <TaxonomyPanel
-                        key={taxonomy.name}
-                        taxonomy={taxonomy}
-                        settings={{ ...settings, taxonomies: safeTaxonomies }}
-                        onSettingChange={onSettingChange}
-                    />
-                ))}
+                <Card size="small" className="wpts-post-type-card">
+                    <CardHeader>
+                        <Flex direction="column">
+                            <h3 className="wpts-card-title">{__('Post Types', 'wpts-theme-switcher')}</h3>
+                            <p className="wpts-card-description">
+                                {__('Select themes for different post types. Use "Use Active Theme" to apply the currently active theme.', 'wpts-theme-switcher')}
+                            </p>
+                        </Flex>
+                    </CardHeader>
+                    <CardBody>
+                    {Object.values(postTypes).map((postType) => (
+                        <PostTypePanel 
+                            key={postType.name}
+                            postType={postType}
+                            settings={{ ...settings, post_types: safePostTypes }}
+                            onSettingChange={onSettingChange}
+                        />
+                    ))}
+                    </CardBody>
+                </Card>
+
+                <Card size="small" className="wpts-post-type-card">
+                    <CardHeader>
+                        <Flex direction="column">
+                            <h3 className="wpts-card-title">
+                                {__('Taxonomies', 'wpts-theme-switcher')}
+                            </h3>
+                            <p className="wpts-card-description">
+                                {__('Select themes for different post types. Use "Use Active Theme" to apply the currently active theme.', 'wpts-theme-switcher')}
+                            </p>
+                        </Flex>
+                    </CardHeader>
+                    <CardBody>
+                        {Object.values(taxonomies).map((taxonomy) => (
+                            <TaxonomyPanel
+                                key={taxonomy.name}
+                                taxonomy={taxonomy}
+                                settings={{ ...settings, taxonomies: safeTaxonomies }}
+                                onSettingChange={onSettingChange}
+                            />
+                        ))}
+                    </CardBody>
+                </Card>
             </div>
         );
     };

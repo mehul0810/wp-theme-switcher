@@ -91,6 +91,18 @@
     margin: 0 auto;
 }
 
+.wpts-post-type-card {
+    margin: 20px 0;
+}
+
+.wpts-card-title {
+    margin: 8px 0;
+}
+
+.wpts-card-description {
+    margin: 0 0 4px;
+}
+
 .wpts-settings-content .notice { 
     margin: 0px 0px 24px 0px;
 }
