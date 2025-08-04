@@ -48,10 +48,10 @@ class Frontend {
 
 		if ( $preview_enabled && $theme_switcher->can_user_preview() && $preview_theme ) {
 			// Add preview banner.
-			add_action( 'wp_body_open', array( $this, 'add_preview_banner' ) );
+			// add_action( 'wp_body_open', array( $this, 'add_preview_banner' ) );
 			
 			// Add compatibility notices.
-			add_action( 'wp_body_open', array( $this, 'add_compatibility_notice' ) );
+			// add_action( 'wp_body_open', array( $this, 'add_compatibility_notice' ) );
 		}
 	}
 

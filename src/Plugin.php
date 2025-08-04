@@ -60,15 +60,15 @@ final class Plugin {
 		// Initialize core components.
 		new ThemeSwitcher();
 		// new Settings();
-		
+		new Admin\Admin();
 		// Initialize admin components if in admin area.
 		if ( is_admin() ) {
-			new Admin\Admin();
+			
 			new Admin\SettingsPage();
 		}
 
 		// Initialize frontend components.
-		new Frontend\Frontend();
+		// new Frontend\Frontend();
 	}
 
 	/**

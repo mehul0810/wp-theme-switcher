@@ -43,9 +43,46 @@ class Admin {
 	private function init_hooks() {
 		// Add settings link to plugins page.
 		add_filter( 'plugin_action_links_' . plugin_basename( WPTS_PLUGIN_FILE ), array( $this, 'add_settings_link' ) );
+
+		// Add admin bar menu for preview banner (frontend only, admin users only)
+		add_action( 'admin_bar_menu', array( $this, 'add_preview_banner_admin_bar' ), 80 );
 		
-		// Add admin bar menu.
+		// Existing preview mode admin bar menu (if any)
 		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_menu' ), 999 );
+	}
+
+	/**
+	 * Add Preview Banner admin bar menu for administrators on frontend.
+	 */
+	public function add_preview_banner_admin_bar( $wp_admin_bar ) {
+		// Only on frontend, only for administrators
+		if ( is_admin() || ! current_user_can( 'administrator' ) ) {
+			return;
+		}
+
+		$themes_instance = new \WPThemeSwitcher\ThemeSwitcher();
+		$themes = $themes_instance->get_available_themes();
+		$active_theme_slug = get_stylesheet();
+
+		// Remove active theme from the list
+		unset( $themes[ $active_theme_slug ] );
+
+		// Add main menu node
+		$wp_admin_bar->add_node( array(
+			'id'    => 'wpts-preview-banner',
+			'title' => __( 'Preview Theme', 'wpts-theme-switcher' ),
+			'href'  => false,
+		) );
+
+		// Add theme items as children
+		foreach ( $themes as $slug => $name ) {
+			$wp_admin_bar->add_node( array(
+				'id'     => 'wpts-preview-banner-theme-' . sanitize_html_class( $slug ),
+				'parent' => 'wpts-preview-banner',
+				'title'  => esc_html( $name ),
+				'href'   => add_query_arg( 'wpts_theme', $slug ),
+			) );
+		}
 	}
 
 	/**
@@ -82,14 +119,13 @@ class Admin {
 			return;
 		}
 
-		// Get current preview theme.
 		$preview_theme = $theme_switcher->get_preview_theme();
+		$query_param = $theme_switcher->get_query_param_name();
+		$themes = $theme_switcher->get_available_themes();
 
-		// If in preview mode, add admin bar menu.
 		if ( $preview_theme ) {
 			$theme = wp_get_theme( $preview_theme );
-			
-			// Add main node.
+			// Show previewing theme and exit link
 			$wp_admin_bar->add_node( array(
 				'id'    => 'wpts-preview',
 				'title' => sprintf(
@@ -102,9 +138,7 @@ class Admin {
 					'class' => 'wpts-preview-node',
 				),
 			) );
-
-			// Add exit preview link.
-			$current_url = remove_query_arg( $theme_switcher->get_query_param_name(), esc_url( $_SERVER['REQUEST_URI'] ) );
+			$current_url = remove_query_arg( $query_param, esc_url( $_SERVER['REQUEST_URI'] ) );
 			$wp_admin_bar->add_node( array(
 				'id'     => 'wpts-exit-preview',
 				'parent' => 'wpts-preview',
@@ -114,30 +148,29 @@ class Admin {
 					'class' => 'wpts-exit-preview-link',
 				),
 			) );
-
-			// Get all themes for switcher.
-			$themes = $theme_switcher->get_available_themes();
-			
-			// Add "Switch Theme" submenu.
+		} else {
+			// Show Preview Theme menu by default
 			$wp_admin_bar->add_node( array(
-				'id'     => 'wpts-switch-theme',
-				'parent' => 'wpts-preview',
-				'title'  => __( 'Switch Theme', 'wpts-theme-switcher' ),
-				'href'   => '#',
+				'id'    => 'wpts-preview',
+				'title' => __( 'Preview Theme', 'wpts-theme-switcher' ),
+				'href'  => '#',
 			) );
+		}
 
-			// Add theme options.
-			foreach ( $themes as $theme_slug => $theme_name ) {
-				$wp_admin_bar->add_node( array(
-					'id'     => 'wpts-theme-' . sanitize_html_class( $theme_slug ),
-					'parent' => 'wpts-switch-theme',
-					'title'  => $theme_name,
-					'href'   => add_query_arg( $theme_switcher->get_query_param_name(), $theme_slug ),
-					'meta'   => array(
-						'class' => $theme_slug === $preview_theme ? 'wpts-current-theme' : '',
-					),
-				) );
-			}
+		$active_theme_slug = get_stylesheet();
+		foreach ( $themes as $theme_slug => $theme_name ) {
+			$default_active_theme = get_option( 'current_theme' );
+			$is_active = ( $theme_name === $default_active_theme );
+			$display_name = $theme_name . ( $is_active ? ' ' . __( '[Active Theme]', 'wpts-theme-switcher' ) : '' );
+			$wp_admin_bar->add_node( array(
+				'id'     => 'wpts-theme-' . sanitize_html_class( $theme_slug ),
+				'parent' => 'wpts-preview',
+				'title'  => $display_name,
+				'href'   => add_query_arg( $query_param, $theme_slug ),
+				'meta'   => array(
+					'class' => ( $preview_theme && $theme_slug === $preview_theme ) ? 'wpts-current-theme' : '',
+				),
+			) );
 		}
 	}
 }
