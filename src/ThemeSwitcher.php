@@ -82,7 +82,6 @@ class ThemeSwitcher {
 		add_filter( 'body_class', array( $this, 'add_preview_body_class' ) );
 		
 		// General hooks (for both modes)
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
 		add_action( 'init', array( $this, 'register_post_meta' ) );
 		add_action( 'init', array( $this, 'register_term_meta' ) );
@@ -355,95 +354,6 @@ class ThemeSwitcher {
 	}
 
 	/**
-	 * Enqueue scripts and styles for Preview Mode.
-	 *
-	 * These scripts and styles are only loaded for users who can preview themes.
-	 * They never affect regular visitors.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function enqueue_scripts() {
-
-		// Check if preview mode is enabled in settings
-		if ( ! $this->theme_resolver->is_preview_mode_enabled() ) {
-			return;
-		}
-
-		// Only enqueue for users who can preview themes
-		if ( ! $this->can_user_preview() ) {
-			return;
-		}
-		
-		// Check if user is currently in preview mode
-		$preview_theme = $this->get_preview_theme();
-		if ( ! $preview_theme ) {
-			return;
-		}
-
-		// Enqueue preview CSS
-		// wp_enqueue_style(
-		// 	'wpts-preview',
-		// 	WPTS_PLUGIN_URL . 'assets/dist/preview.css',
-		// 	array(),
-		// 	WPTS_PLUGIN_VERSION
-		// );
-
-		// Enqueue preview banner-specific CSS
-		// wp_enqueue_style(
-		// 	'wpts-preview-banner',
-		// 	WPTS_PLUGIN_URL . 'assets/dist/preview-banner.css',
-		// 	array(),
-		// 	WPTS_PLUGIN_VERSION
-		// );
-
-		// Enqueue preview JS
-		// wp_enqueue_script(
-		// 	'wpts-preview',
-		// 	WPTS_PLUGIN_URL . 'assets/dist/preview.js',
-		// 	array( 'jquery' ),
-		// 	WPTS_PLUGIN_VERSION,
-		// 	true
-		// );
-
-		// Enqueue preview-banner specific JS
-		// wp_enqueue_script(
-		// 	'wpts-preview-banner',
-		// 	WPTS_PLUGIN_URL . 'assets/dist/preview-banner.js',
-		// 	array( 'jquery' ),
-		// 	WPTS_PLUGIN_VERSION,
-		// 	true
-		// );
-
-		// Localize script
-		wp_localize_script(
-			'wpts-preview',
-			'Preview',
-			array(
-				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'nonce'         => wp_create_nonce( 'wpts-preview-nonce' ),
-				'currentTheme'  => $this->get_preview_theme(),
-				'queryParam'    => $this->get_query_param_name(),
-				'isPreviewMode' => (bool) $this->get_preview_theme(),
-			)
-		);
-
-		// Localize preview-banner script (if that’s where UI is handled)
-		wp_localize_script(
-			'wpts-preview-banner',
-			'PreviewBanner',
-			array(
-				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'nonce'         => wp_create_nonce( 'wpts-preview-banner-nonce' ),
-				'currentUrl'    => esc_url( remove_query_arg( $this->get_query_param_name() ) ),
-				'queryParam'    => $this->get_query_param_name(),
-				'currentTheme'  => $preview_theme,
-			)
-		);
-		
-	}
-
-	/**
 	 * Enqueue editor assets for Theme Set Mode.
 	 *
 	 * These assets allow setting a theme for individual posts in the editor.
@@ -490,7 +400,7 @@ class ThemeSwitcher {
 		// Localize script
 		wp_localize_script(
 			'wpts-editor',
-			'stsEditor',
+			'wptsEditor',
 			array(
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 				'nonce'        => wp_create_nonce( 'wpts-editor-nonce' ),

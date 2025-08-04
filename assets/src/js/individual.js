@@ -20,7 +20,7 @@ import { useState, useEffect } from '@wordpress/element';
 	 */
 	const ThemeMetaField = () => {
 		// Get all themes from localized data
-		const availableThemes = (window.stsEditor && window.stsEditor.themes) || [];
+		const availableThemes = (window.wptsEditor && window.wptsEditor.themes) || [];
 		// Get meta value
 		const meta = useSelect((select) => select('core/editor').getEditedPostAttribute('meta') || {}, []);
 		const { editPost } = useDispatch('core/editor');
