@@ -66,8 +66,6 @@ final class Plugin {
 		// Initialize Core Theme Switcher module.
 		new ThemeSwitcher();
 
-		
-
 		// Load Admin Pages only.
 		if ( is_admin() ) {	
 			new Admin\Filters();
